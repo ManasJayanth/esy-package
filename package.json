@@ -1,9 +1,11 @@
 {
   "name": "bale",
-  "version": "0.1.0",
+  "version": "0.1.0-dev.27",
   "description": "",
-  "bin": "js/bin/main.js",
+  "bin": "./bale",
   "scripts": {
+    "start": "tsc -w",
+    "test": "jest",
     "build": "tsc"
   },
   "keywords": [
@@ -13,10 +15,18 @@
   "author": "Manas Jayanth",
   "license": "MIT",
   "devDependencies": {
+    "@types/fs-extra": "^11.0.1",
     "@types/node": "^16.11.7",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.0.5",
     "typescript": "^4.5.2"
   },
   "dependencies": {
-    "commander": "^8.3.0"
+    "commander": "^8.3.0",
+    "debug": "^4.3.2",
+    "fs-extra": "^11.1.1",
+    "npm-profile": "^7.0.1",
+    "rimraf": "^4.4.1",
+    "verdaccio": "^5.23.1"
   }
 }

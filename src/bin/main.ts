@@ -1,11 +1,35 @@
-import { Command } from 'commander';
-const version = require('./package.json').version;
+import { Command } from "commander";
+import * as commandDefs from "../lib/commands";
+
+const version = require("../../package.json").version;
 
 const program = new Command();
-program
-    .version(version)
-    .action(() => {
-	console.log("here");
-    });
+
+program.version(version);
+
+let defaultCommand = program
+  .option("-C, --cwd [cwd]", "Set current working directory")
+  .option(
+    "-s, --storage-path [path]",
+    "Path that verdaccio can use for storage as it runs the tests"
+  )
+  .option(
+    "-p, --pack [packingCommands]",
+    "Specify sequence of commands, separated by &&, to package for NPM"
+  )
+  .action(async () => {
+    const { pack, cwd = process.cwd() } = program.opts();
+    await commandDefs.defaultCommand(pack, cwd);
+  });
+
+let packageCommand = program
+  .command("package")
+  .description(
+    "Packages a given esy.json manifest (and patches if any) for NPM. It will create a npm 'packable' folder in _esy-package/<package-name>"
+  )
+  .action(async () => {
+    const { cwd = process.cwd() } = program.opts();
+    await commandDefs.pkg(cwd);
+  });
 
 program.parse(process.argv);

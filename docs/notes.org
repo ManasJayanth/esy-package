@@ -1,0 +1,31 @@
+* Why implement login ourselves, instead of shelling out to 'npm login'?
+
+Because, writing username and password to the stdin of the =npm login=
+process, seems unreliable.
+
+* Why we write to .npmrc by hand, and not use =@npm/config= like we did for 'npm login'?
+
+Because consuming the library was tedious.
+
+#+begin_src js
+let npmConfig = new Config({
+  npmPath: this.#npmRoot,
+  definitions,
+  flatten,
+  shorthands,
+});
+#+end_src
+
+It's not easy to construct
+definitions. =lib/utils/config/definitions.js= is a long list of,
+
+#+BEGIN_SRC js
+define('<key>'
+, {
+  default: null,
+  type: [null, Boolean],
+  short: 'y',
+  description: `...`,
+})
+#+END_SRC
+

@@ -1,13 +1,16 @@
 {
   "compilerOptions": {
+    "target": "es2015",
+    "esModuleInterop": true,
     "module": "commonjs",
     "noImplicitAny": false,
     "removeComments": true,
     "preserveConstEnums": true,
     "outDir": "js",
     "rootDir": "src",
+    "skipLibCheck": true,
     "sourceMap": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "**/*.spec.ts"]
+  "exclude": ["**/*.spec.ts"]
 }
