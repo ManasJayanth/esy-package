@@ -47,7 +47,7 @@ export async function defaultCommand(
           cp.execSync(command);
         });
     } else {
-      Bale.pack(cwd);
+      await Bale.pack(cwd);
     }
     Log.info("Verdaccio registry started");
     let tarballPath = `${cwd}/package.tar.gz`;
