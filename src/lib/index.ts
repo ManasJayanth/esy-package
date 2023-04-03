@@ -164,8 +164,10 @@ export async function createSession(): Promise<string> {
   let testEmail = "foo@bar.com"; // TODO centralise this
   let testPassword = "bar"; // TODO centralise this
   try {
+    debug("Attempting npm login");
     token = await Npm.login(testUsername, testPassword);
   } catch (_) {
+    debug("NPM login failed. Attempting adduser");
     token = await Npm.addUser(testUsername, testEmail, testPassword);
   }
   // // Writing to .npmrc by hand. See docs/notes.org to see why
