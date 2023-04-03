@@ -19,12 +19,12 @@ export function init(
     packages: {
       "@*/*": {
         access: "$anonymous",
-        publish: "$anonymous",
+        publish: "$all",
         unpublish: "$anonymous",
       },
       "**": {
         access: "$anonymous",
-        publish: "$anonymous",
+        publish: "$all",
         unpublish: "$anonymous",
       },
     },

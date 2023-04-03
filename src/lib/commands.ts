@@ -35,7 +35,7 @@ export async function defaultCommand(
   );
   await NpmServer.start(server);
   Log.info("Setting up verdaccio user session");
-  // let token = await Bale.createSession();
+  await Bale.createSession();
   Log.info("Packaging");
   try {
     if (pack) {
