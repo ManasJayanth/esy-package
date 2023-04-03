@@ -46,13 +46,19 @@ export function init(
   });
 }
 
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export function start(args: any): Promise<void> {
   let { server, addrs } = args;
   return new Promise((resolve, reject) => {
     try {
       server.unref();
       server.listen(addrs.port || addrs.path, addrs.host, () => {
-        resolve();
+        // A delay of 2.5 seconds to let the plugins load.
+        // it was noticed in the CI logs that auth began before the plugin was loaded
+        delay(2500).then(resolve);
       });
     } catch (error) {
       reject(error);
