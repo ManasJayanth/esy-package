@@ -21,6 +21,7 @@ export async function defaultCommand(
   cwd: path,
   storagePath: path = Defaults.storagePath
 ) {
+  let returnStatus: number;
   Log.info("Setting up");
   Log.info("Clearing storage path meant for verdaccio", storagePath);
   rimraf.sync(storagePath);
@@ -68,12 +69,15 @@ export async function defaultCommand(
       Log.info("Running esy");
       Log.process("esy", await esy({ cwd: testProjectPath, prefixPath }));
     });
+    returnStatus = 0;
   } catch (e) {
     Log.error(e.message);
     Log.error(e.stack);
+    returnStatus = -1;
   } finally {
     cleanup(server);
   }
+  process.exit(returnStatus);
 }
 
 export * from "./package";
