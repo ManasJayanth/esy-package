@@ -148,9 +148,11 @@ _esy
 `
   );
   await NpmClient.pack(pkgPath);
+  let packageTarGzPath = path.join(cwd, "package.tar.gz");
+  debug("Package tarball path that will be published", packageTarGzPath);
   fs.renameSync(
     path.join(pkgPath, `${name}-${version}.tgz`),
-    path.join(cwd, "package.tar.gz")
+    packageTarGzPath
   );
 }
 
