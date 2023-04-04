@@ -1,7 +1,10 @@
 import * as cp from "child_process";
 import * as path from "path";
+import { pathNormalise } from "./utils";
 
 export function tar(filePath, destDir, gzip?) {
+  filePath = pathNormalise(filePath);
+  destDir = pathNormalise(destDir);
   cp.execSync(`tar -x${gzip ? "z" : ""}f ${filePath} -C ${destDir}`, {
     stdio: "inherit",
   });

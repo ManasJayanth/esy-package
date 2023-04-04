@@ -1,6 +1,6 @@
-import * as fs from 'fs';
-import * as url from "url";
+import * as fs from "fs";
 import * as path from "path";
+import * as url from "url";
 
 export function mkdirpSync(pathStr) {
   if (fs.existsSync(pathStr)) {
@@ -48,4 +48,13 @@ export function fetch(urlStr, urlObj, pathStr, callback) {
       });
     }
   });
+}
+
+export function pathNormalise(p: string): string {
+  if (process.platform === "win32" && /bash\.exe/.test(process.env.SHELL)) {
+    let letter = process.env.HOMEDRIVE.replace(":", "").toLowerCase();
+    return p.replace(/\\/g, "/").replace(process.env.HOMEDRIVE, `/${letter}`);
+  } else {
+    return p;
+  }
 }
