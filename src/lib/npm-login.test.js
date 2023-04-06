@@ -1,4 +1,4 @@
-const NpmLogin = require("./npm-login");
+const NpmLogin = require("./npm-session");
 const profile = require("npm-profile");
 
 profile.loginCouch = jest

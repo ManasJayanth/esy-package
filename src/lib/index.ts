@@ -27,7 +27,7 @@ function computeChecksum(filePath, algo) {
 }
 
 function download(urlStrWithChecksum, pkgPath) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(async function (resolve, reject) {
     let [urlStr, checksum] = urlStrWithChecksum.split("#");
     if (!urlStr) {
       reject(`No url in ${urlStr}`);
@@ -68,23 +68,22 @@ function download(urlStrWithChecksum, pkgPath) {
       }
 
       if (fs.existsSync(tmpDownloadedPath)) {
-        computeChecksum(tmpDownloadedPath, algo).then((checksum) => {
-          if (hashStr == checksum) {
-            uncompress(tmpDownloadedPath, pkgPath);
-            resolve(tmpDownloadedPath);
-          } else {
-            fetch(urlStr, urlObj, tmpDownloadedPath, () =>
-              computeChecksum(tmpDownloadedPath, algo).then((checksum) => {
-                if (hashStr == checksum) {
-                  uncompress(tmpDownloadedPath, pkgPath);
-                  resolve(tmpDownloadedPath);
-                } else {
-                  reject(`Checksum error: expected ${hashStr} got ${checksum}`);
-                }
-              })
-            );
-          }
-        });
+        let checksum = await computeChecksum(tmpDownloadedPath, algo);
+        if (hashStr == checksum) {
+          uncompress(tmpDownloadedPath, pkgPath);
+          resolve(tmpDownloadedPath);
+        } else {
+          fetch(urlStr, urlObj, tmpDownloadedPath, () =>
+            computeChecksum(tmpDownloadedPath, algo).then((checksum) => {
+              if (hashStr == checksum) {
+                uncompress(tmpDownloadedPath, pkgPath);
+                resolve(tmpDownloadedPath);
+              } else {
+                reject(`Checksum error: expected ${hashStr} got ${checksum}`);
+              }
+            })
+          );
+        }
       } else {
         fetch(urlStr, urlObj, tmpDownloadedPath, () =>
           computeChecksum(tmpDownloadedPath, algo).then((checksum) => {
