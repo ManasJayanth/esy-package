@@ -1,15 +1,12 @@
-import * as cp from "child_process";
 import Debug from "debug";
-import * as path from "path";
-import * as os from "os";
-import * as url from "url";
 import * as fs from "fs";
-import { mkdirpSync, fetch, copy } from "./utils";
-import * as Npm from "./npm-session";
-import * as NpmClient from "./npm-client";
-import { REGISTRY_HOST, localNpmRc } from "../config";
+import * as nodePath from "path";
+import { localNpmRc, REGISTRY_HOST } from "../config";
 import * as EsyPackage from "./esy-package";
-import * as Defaults from "./defaults";
+import * as NpmClient from "./npm-client";
+import * as Npm from "./npm-session";
+import { copy } from "./utils";
+const Node = { path: nodePath };
 
 const debug = Debug("bale:package:info");
 
@@ -34,24 +31,28 @@ export async function pack(cwd) {
   let buildEnv = filterComments(manifest.override.buildEnv);
   let exportedEnv = filterComments(manifest.override.exportedEnv);
   let esy = { buildsInSource, build, install, buildEnv, exportedEnv };
-  let patchFilesPath = path.join(cwd, "files");
+  let patchFilesPath = Node.path.join(cwd, "files");
   if (fs.existsSync(patchFilesPath)) {
     copy(patchFilesPath, pkgPath);
   }
   fs.writeFileSync(
-    path.join(pkgPath, "package.json"),
+    Node.path.join(pkgPath, "package.json"),
     JSON.stringify({ name, version, description, esy, dependencies }, null, 2)
   );
   fs.writeFileSync(
-    path.join(pkgPath, ".npmignore"),
+    Node.path.join(pkgPath, ".npmignore"),
     `
 _esy
 `
   );
   await NpmClient.pack(pkgPath);
-  let packageTarGzPath = path.join(cwd, "package.tar.gz");
+  let packageTarGzPath = Node.path.join(cwd, "package.tar.gz");
   debug("Package tarball path that will be published", packageTarGzPath);
-  fs.renameSync(path.join(pkgPath, `${name}-${version}.tgz`), packageTarGzPath);
+  fs.renameSync(
+    Node.path.join(pkgPath, `${name}-${version}.tgz`),
+    packageTarGzPath
+  );
+  return pkgPath;
 }
 
 export * from "./npm-session";
