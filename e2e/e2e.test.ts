@@ -1,3 +1,4 @@
+// @ts-nocheck
 const Node = {
   fs: require("fs"),
   os: require("os"),
@@ -7,13 +8,13 @@ const Node = {
 const fse = require("fs-extra");
 const rimraf = require("rimraf");
 const { delimiter, normalize } = require("path");
-// const getPathKey = require("path-key");
-import getPathKey from "path-key";
+const getPathKey = require("path-key");
 
 let pathKey = getPathKey();
-process.env[pathKey] = `${normalize(path)}${delimiter}${process.env[pathKey]}`;
+let esyPackagePath = Node.path.resolve(__dirname, "..");
+process.env[pathKey] = `${normalize(esyPackagePath)}${delimiter}${process.env[pathKey]}`;
 
-const ESY_PACKAGE_PATH = Node.path.resolve(__dirname, "..", "bale");
+const ESY_PACKAGE_PATH = "bale";
 let testProjectPath = Node.path.join(
   Node.os.tmpdir(),
   "esy-package-e2e-test-area"
@@ -45,5 +46,6 @@ test("End-to-end: success case: a project for which esy-package should finish ru
   } catch (e) {
     console.log(e.stdout.toString());
     console.log(e.stderr.toString());
+    throw e;
   }
 });
