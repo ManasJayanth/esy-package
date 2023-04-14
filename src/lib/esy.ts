@@ -35,6 +35,7 @@ async function subcommand(
       {
         cwd,
         env,
+	maxBuffer: 1024 * 500
       },
       (error: Error, stdout: string, stderr: string) => {
         if (error) {
