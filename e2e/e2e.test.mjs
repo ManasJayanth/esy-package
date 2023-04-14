@@ -6,6 +6,12 @@ const Node = {
 };
 const fse = require("fs-extra");
 const rimraf = require("rimraf");
+const { delimiter, normalize } = require("path");
+// const getPathKey = require("path-key");
+import getPathKey from "path-key";
+
+let pathKey = getPathKey();
+process.env[pathKey] = `${normalize(path)}${delimiter}${process.env[pathKey]}`;
 
 const ESY_PACKAGE_PATH = Node.path.resolve(__dirname, "..", "bale");
 let testProjectPath = Node.path.join(
