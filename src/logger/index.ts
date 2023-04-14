@@ -12,3 +12,7 @@ export function process(marker: string, output: ProcessOutput): void {
   debugO(stdout);
   debugE(stderr);
 }
+
+export function raw(output: string): void {
+  console.log(output);
+}

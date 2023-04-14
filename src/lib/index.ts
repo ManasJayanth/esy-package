@@ -2,133 +2,35 @@ import * as cp from "child_process";
 import Debug from "debug";
 import * as path from "path";
 import * as os from "os";
-import * as crypto from "crypto";
 import * as url from "url";
 import * as fs from "fs";
-import { uncompress } from "./compression";
 import { mkdirpSync, fetch, copy } from "./utils";
 import * as Npm from "./npm-session";
 import * as NpmClient from "./npm-client";
 import { REGISTRY_HOST, localNpmRc } from "../config";
+import * as EsyPackage from "./esy-package";
+import * as Defaults from "./defaults";
 
 const debug = Debug("bale:package:info");
 
-function computeChecksum(filePath, algo) {
-  return new Promise((resolve, reject) => {
-    let stream = fs.createReadStream(filePath).pipe(crypto.createHash(algo));
-    let buf = "";
-    stream.on("data", (chunk) => {
-      buf += chunk.toString("hex");
-    });
-    stream.on("end", () => {
-      resolve(buf);
-    });
-  });
-}
-
-function download(urlStrWithChecksum, pkgPath) {
-  return new Promise(async function (resolve, reject) {
-    let [urlStr, checksum] = urlStrWithChecksum.split("#");
-    if (!urlStr) {
-      reject(`No url in ${urlStr}`);
-    } else if (!checksum) {
-      reject(`No checksum in ${urlStr}`);
-    }
-
-    let urlObj = url.parse(urlStr);
-    let filename = path.basename(urlObj.path);
-    let tmpDownloadedPath = path.join(os.tmpdir(), "esy-package-" + filename);
-
-    let protoParts = urlObj.protocol.split("+");
-
-    if (protoParts.length > 2) {
-      reject("Unrecognised protocol " + urlObj.protocol);
-    } else if (protoParts.length === 2) {
-      let [a, b] = protoParts;
-      if (a === "git") {
-        let gitUrl = url.format({ ...urlObj, protocol: b });
-
-        if (fs.existsSync(tmpDownloadedPath)) {
-          reject("TODO: run rm -rf");
-        } else {
-          let destDir = path.join(pkgPath, "git-source"); // TODO: not network resilient. Any interruptions will corrupt the path
-          cp.execSync(`git clone ${gitUrl} ${destDir}`);
-          let commitHash = checksum;
-          cp.execSync(`git -C ${destDir} checkout ${commitHash}`);
-          resolve(destDir);
-        }
-      } else {
-        reject("Unrecognised protocol " + urlObj.protocol);
-      }
-    } else {
-      let [algo, hashStr] = checksum.split(":");
-      if (!hashStr) {
-        hashStr = algo;
-        algo = "sha1";
-      }
-
-      if (fs.existsSync(tmpDownloadedPath)) {
-        let checksum = await computeChecksum(tmpDownloadedPath, algo);
-        if (hashStr == checksum) {
-          uncompress(tmpDownloadedPath, pkgPath);
-          resolve(tmpDownloadedPath);
-        } else {
-          fetch(urlStr, urlObj, tmpDownloadedPath, () =>
-            computeChecksum(tmpDownloadedPath, algo).then((checksum) => {
-              if (hashStr == checksum) {
-                uncompress(tmpDownloadedPath, pkgPath);
-                resolve(tmpDownloadedPath);
-              } else {
-                reject(`Checksum error: expected ${hashStr} got ${checksum}`);
-              }
-            })
-          );
-        }
-      } else {
-        fetch(urlStr, urlObj, tmpDownloadedPath, () =>
-          computeChecksum(tmpDownloadedPath, algo).then((checksum) => {
-            if (hashStr == checksum) {
-              uncompress(tmpDownloadedPath, pkgPath);
-              resolve(tmpDownloadedPath);
-            } else {
-              reject(`Checksum error: expected ${hashStr} got ${checksum}`);
-            }
-          })
-        );
-      }
-    }
-  });
+function filterComments(o = {}) {
+  return Object.keys(o)
+    .filter((k) => !k.startsWith("//"))
+    .reduce((acc, k) => {
+      acc[k] = o[k];
+      return acc;
+    }, {});
 }
 
 export async function pack(cwd) {
-  let manifest = require(path.join(cwd, "esy.json"));
+  let manifest = EsyPackage.getManifest(cwd);
   let {
-    source,
     name,
     version,
     description,
     override: { build, install, buildsInSource, dependencies },
   } = manifest;
-
-  let esyPackageDir = path.join(cwd, "_esy-package");
-  mkdirpSync(esyPackageDir);
-  let pkgPath = esyPackageDir;
-  await download(source, pkgPath);
-  let entries = fs.readdirSync(pkgPath);
-  if (entries.length > 1) {
-    // Extracted tarball is not wrapped by a single root directory. The entire `pkgPath` must be considered as package root
-    // pkgPath is the same
-  } else {
-    pkgPath = path.join(pkgPath, entries[0]);
-  }
-  function filterComments(o = {}) {
-    return Object.keys(o)
-      .filter((k) => !k.startsWith("//"))
-      .reduce((acc, k) => {
-        acc[k] = o[k];
-        return acc;
-      }, {});
-  }
+  let pkgPath = await EsyPackage.fetch(cwd);
   let buildEnv = filterComments(manifest.override.buildEnv);
   let exportedEnv = filterComments(manifest.override.exportedEnv);
   let esy = { buildsInSource, build, install, buildEnv, exportedEnv };

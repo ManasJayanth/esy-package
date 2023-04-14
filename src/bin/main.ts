@@ -32,4 +32,12 @@ program
     await commandDefs.pkg(cwd);
   });
 
+program
+  .command("fetch")
+  .description("Given an esy.json manifest, it will fetch the archive (tar, zip etc), extract it, and echo the path where sources have been extracted")
+  .action(async () => {
+    const { cwd = process.cwd() } = program.opts();
+    await commandDefs.fetch(cwd);
+  });
+
 program.parse(process.argv);
