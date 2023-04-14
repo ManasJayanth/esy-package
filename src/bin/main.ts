@@ -7,7 +7,7 @@ const program = new Command();
 
 program.version(version);
 
-let defaultCommand = program
+program
   .option("-C, --cwd [cwd]", "Set current working directory")
   .option(
     "-s, --storage-path [path]",
@@ -22,7 +22,7 @@ let defaultCommand = program
     await commandDefs.defaultCommand(pack, cwd);
   });
 
-let packageCommand = program
+program
   .command("package")
   .description(
     "Packages a given esy.json manifest (and patches if any) for NPM. It will create a npm 'packable' folder in _esy-package/<package-name>"
