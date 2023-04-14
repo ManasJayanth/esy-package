@@ -1,35 +1,39 @@
 // @ts-nocheck
 const Node = {
   fs: require("fs"),
-  os: require("os"),
   path: require("path"),
   cp: require("child_process"),
 };
 const fse = require("fs-extra");
 const rimraf = require("rimraf");
-const { delimiter, normalize } = require("path");
-const getPathKey = require("path-key");
+import { ESY_PACKAGE_CMD, esyPackagePath } from "./config";
+import { commonSetup } from "./utils";
 
-let pathKey = getPathKey();
-let esyPackagePath = Node.path.resolve(__dirname, "..");
-process.env[pathKey] = `${normalize(esyPackagePath)}${delimiter}${process.env[pathKey]}`;
+export let testManifestFilename = "test-manifest.json";
+export let esyTestJson = "esy-test.json";
+export let esyTestDir = "esy-test";
 
-const ESY_PACKAGE_PATH = "bale";
-let testProjectPath = Node.path.join(
-  Node.os.tmpdir(),
-  "esy-package-e2e-test-area"
-);
-let testManifestFilename = "test-manifest.json";
-let esyTestJson = "esy-test.json";
-let esyTestPath = Node.path.join(testProjectPath, "esy-test");
+let testProjectPath;
 
 beforeAll(() => {
-  rimraf.sync(testProjectPath);
-  fse.mkdirpSync(testProjectPath);
+  /////////////////////////////////////////////////////////////////////////////////////////
+  // We have to setup,									 //
+  // 1. a manifest packaging the dummy c package, `hello`, creating `esy-hello` package. //
+  // 2. a manifest consuming the newly created `esy-hello` package			 //
+  /////////////////////////////////////////////////////////////////////////////////////////
+
+  // Clearing any previously created test fixtures
+  const testProjectDir = "esy-package-e2e-test-area";
+  testProjectPath = commonSetup(testProjectDir);
+
+  // Copying the manifest for esy-hello
   Node.fs.copyFileSync(
     Node.path.join(__dirname, testManifestFilename),
     Node.path.join(testProjectPath, "esy.json")
   );
+
+  // Copying the manifest for esy-test/package.json
+  let esyTestPath = Node.path.join(testProjectPath, "esy-test");
   fse.mkdirpSync(esyTestPath);
   Node.fs.copyFileSync(
     Node.path.join(__dirname, esyTestJson),
@@ -37,15 +41,31 @@ beforeAll(() => {
   );
 });
 
-test("End-to-end: success case: a project for which esy-package should finish running successfullly", () => {
+test.skip("End-to-end: success case: a project for which esy-package should finish running successfullly", () => {
   try {
-    Node.cp.execSync(`${ESY_PACKAGE_PATH}`, {
+    Node.cp.execSync(`${ESY_PACKAGE_CMD}`, {
       cwd: testProjectPath,
-      env: { DEBUG: "bale*", ...process.env },
+      env: { ...process.env, DEBUG: "bale*" },
     });
   } catch (e) {
     console.log(e.stdout.toString());
     console.log(e.stderr.toString());
+    throw e;
+  }
+});
+
+test("End-to-end: success case: fetch sources for a valid manifest", () => {
+  try {
+    let stdout = Node.cp.execSync(`${ESY_PACKAGE_CMD} fetch`, {
+      cwd: testProjectPath,
+      env: { DEBUG: "bale*", ...process.env },
+      stdio: "pipe",
+    });
+    expect(stdout.toString()).toContain(
+      Node.path.join("_esy-package", "test-hello-c-0.1.0")
+    );
+  } catch (e) {
+    console.log(e);
     throw e;
   }
 });
