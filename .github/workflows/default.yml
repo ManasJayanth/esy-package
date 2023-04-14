@@ -1,0 +1,41 @@
+name: Build and test
+
+on:
+  - push
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Use Node.js 14.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14.x
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Build the typescript sources
+        run: npm run build
+
+      - name: Run tests
+        run: npm run test
+
+      - name: Pack into tarball for npm release
+        run: npm pack
+
+      - uses: actions/upload-artifact@v3
+        with:
+          path: '*.tar.gz'
