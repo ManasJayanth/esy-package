@@ -8,7 +8,7 @@ export async function publish(
   return new Promise(function (resolve, reject) {
     cp.exec(
       `npm publish --registry ${registryUrl} ${tarballPath}`,
-      {},
+      {maxBuffer: 5000 * 1024},
       (error: Error, stdout, stderr) => {
         if (error) {
           reject(error);
@@ -24,7 +24,7 @@ export async function pack(pkgPath: path): Promise<ProcessOutput> {
   return new Promise(function (resolve, reject) {
     cp.exec(
       "npm pack",
-      { cwd: pkgPath },
+      { cwd: pkgPath, maxBuffer: 5000 * 1024,},
       (error: cp.ExecException, stdout: string, stderr: string) => {
         if (error) {
           reject(error);
