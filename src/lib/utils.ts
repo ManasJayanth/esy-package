@@ -43,7 +43,7 @@ export function copy(src, dest) {
   }
 }
 
-export function fetch(urlStr, urlObj, pathStr, callback) {
+export function fetch(urlStr, urlObj, pathStr) {
   let httpm;
   switch (urlObj.protocol) {
     case "http:":
@@ -55,15 +55,23 @@ export function fetch(urlStr, urlObj, pathStr, callback) {
     default:
       throw `Unrecognised protocol in provided url: ${urlStr}`;
   }
-  httpm.get(urlObj, function (response) {
-    if (response.statusCode == 302) {
-      let urlStr = response.headers.location;
-      fetch(urlStr, url.parse(urlStr), pathStr, callback);
-    } else {
-      response.pipe(fs.createWriteStream(pathStr)).on("finish", function () {
-        callback(pathStr);
-      });
-    }
+  return new Promise(function (resolve, reject) {
+    httpm
+      .get(urlObj, function (response) {
+        if (response.statusCode == 302) {
+          let urlStr = response.headers.location;
+          fetch(urlStr, url.parse(urlStr), pathStr).then(resolve).catch(reject);
+        } else if (response.statusCode > 100 && response.statusCode < 300) {
+          response
+            .pipe(fs.createWriteStream(pathStr))
+            .on("finish", function () {
+              resolve(pathStr);
+            });
+        } else {
+          reject(new Error("non 200 statusCode"));
+        }
+      })
+      .on("error", reject);
   });
 }
 
@@ -76,76 +84,70 @@ export function pathNormalise(p: string): string {
   }
 }
 
-export function download(urlStrWithChecksum, pkgPath) {
-  return new Promise(async function (resolve, reject) {
-    let [urlStr, checksum] = urlStrWithChecksum.split("#");
-    if (!urlStr) {
-      reject(`No url in ${urlStr}`);
-    } else if (!checksum) {
-      reject(`No checksum in ${urlStr}`);
-    }
+export async function download(urlStrWithChecksum, pkgPath) {
+  let [urlStr, checksum] = urlStrWithChecksum.split("#");
+  if (!urlStr) {
+    throw new Error(`No url in ${urlStr}`);
+  } else if (!checksum) {
+    throw new Error(`No checksum in ${urlStr}`);
+  }
+  let urlObj = url.parse(urlStr);
+  let filename = path.basename(urlObj.path);
+  let tmpDownloadedPath = path.join(os.tmpdir(), "esy-package-" + filename);
 
-    let urlObj = url.parse(urlStr);
-    let filename = path.basename(urlObj.path);
-    let tmpDownloadedPath = path.join(os.tmpdir(), "esy-package-" + filename);
+  let protoParts = urlObj.protocol.split("+");
 
-    let protoParts = urlObj.protocol.split("+");
-
-    if (protoParts.length > 2) {
-      reject("Unrecognised protocol " + urlObj.protocol);
-    } else if (protoParts.length === 2) {
-      let [a, b] = protoParts;
-      if (a === "git") {
-        let gitUrl = url.format({ ...urlObj, protocol: b });
-
-        if (fs.existsSync(tmpDownloadedPath)) {
-          reject("TODO: run rm -rf");
-        } else {
-          let destDir = path.join(pkgPath, "git-source"); // TODO: not network resilient. Any interruptions will corrupt the path
-          cp.execSync(`git clone ${gitUrl} ${destDir}`);
-          let commitHash = checksum;
-          cp.execSync(`git -C ${destDir} checkout ${commitHash}`);
-          resolve(destDir);
-        }
-      } else {
-        reject("Unrecognised protocol " + urlObj.protocol);
-      }
-    } else {
-      let [algo, hashStr] = checksum.split(":");
-      if (!hashStr) {
-        hashStr = algo;
-        algo = "sha1";
-      }
+  if (protoParts.length > 2) {
+    throw new Error("Unrecognised protocol " + urlObj.protocol);
+  }
+  if (protoParts.length === 2) {
+    let [a, b] = protoParts;
+    if (a === "git") {
+      let gitUrl = url.format({ ...urlObj, protocol: b });
 
       if (fs.existsSync(tmpDownloadedPath)) {
-        let checksum = await computeChecksum(tmpDownloadedPath, algo);
-        if (hashStr == checksum) {
-          uncompress(tmpDownloadedPath, pkgPath);
-          resolve(tmpDownloadedPath);
-        } else {
-          fetch(urlStr, urlObj, tmpDownloadedPath, () =>
-            computeChecksum(tmpDownloadedPath, algo).then((checksum) => {
-              if (hashStr == checksum) {
-                uncompress(tmpDownloadedPath, pkgPath);
-                resolve(tmpDownloadedPath);
-              } else {
-                reject(`Checksum error: expected ${hashStr} got ${checksum}`);
-              }
-            })
-          );
-        }
+        throw new Error("TODO: run rm -rf");
       } else {
-        fetch(urlStr, urlObj, tmpDownloadedPath, () =>
-          computeChecksum(tmpDownloadedPath, algo).then((checksum) => {
-            if (hashStr == checksum) {
-              uncompress(tmpDownloadedPath, pkgPath);
-              resolve(tmpDownloadedPath);
-            } else {
-              reject(`Checksum error: expected ${hashStr} got ${checksum}`);
-            }
-          })
-        );
+        let destDir = path.join(pkgPath, "git-source"); // TODO: not network resilient. Any interruptions will corrupt the path
+        cp.execSync(`git clone ${gitUrl} ${destDir}`);
+        let commitHash = checksum;
+        cp.execSync(`git -C ${destDir} checkout ${commitHash}`);
+        return destDir;
+      }
+    } else {
+      throw new Error("Unrecognised protocol " + urlObj.protocol);
+    }
+  }
+
+  let [algo, hashStr] = checksum.split(":");
+  if (!hashStr) {
+    hashStr = algo;
+    algo = "sha1";
+  }
+
+  if (fs.existsSync(tmpDownloadedPath)) {
+    let checksum = await computeChecksum(tmpDownloadedPath, algo);
+    if (hashStr == checksum) {
+      uncompress(tmpDownloadedPath, pkgPath);
+      return tmpDownloadedPath;
+    } else {
+      await fetch(urlStr, urlObj, tmpDownloadedPath);
+      let checksum = await computeChecksum(tmpDownloadedPath, algo);
+      if (hashStr == checksum) {
+        uncompress(tmpDownloadedPath, pkgPath);
+        return tmpDownloadedPath;
+      } else {
+        throw new Error(`Checksum error: expected ${hashStr} got ${checksum}`);
       }
     }
-  });
+  } else {
+    await fetch(urlStr, urlObj, tmpDownloadedPath);
+    let checksum = await computeChecksum(tmpDownloadedPath, algo);
+    if (hashStr == checksum) {
+      uncompress(tmpDownloadedPath, pkgPath);
+      return tmpDownloadedPath;
+    } else {
+      throw new Error(`Checksum error: expected ${hashStr} got ${checksum}`);
+    }
+  }
 }

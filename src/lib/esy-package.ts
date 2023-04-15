@@ -17,6 +17,9 @@ export async function fetch(cwd: path ): Promise<path> {
   let {
     source,
   } = manifest;
+  if (!source || source === "") {
+    throw new Error("Empty source field");
+  }
   let pkgPath = Defaults.pkgPath(cwd);
   mkdirpSync(pkgPath);
   await download(source, pkgPath);

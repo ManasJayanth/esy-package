@@ -3,6 +3,16 @@ import * as commandDefs from "../lib/commands";
 
 const version = require("../../package.json").version;
 
+function globalErrorHandler(e) {
+  if (e.errno === -3008) {
+    // ENOTFOUND
+    console.log("Could not find the source URL");
+  } else {
+    console.log(e.message);
+  }
+  process.exit(-1);
+}
+
 const program = new Command();
 
 program.version(version);
@@ -19,7 +29,7 @@ program
   )
   .action(async () => {
     const { pack, cwd = process.cwd() } = program.opts();
-    await commandDefs.defaultCommand(pack, cwd);
+    await commandDefs.defaultCommand(pack, cwd).catch(globalErrorHandler);
   });
 
 program
@@ -29,15 +39,17 @@ program
   )
   .action(async () => {
     const { cwd = process.cwd() } = program.opts();
-    await commandDefs.pkg(cwd);
+    await commandDefs.pkg(cwd).catch(globalErrorHandler);
   });
 
 program
   .command("fetch")
-  .description("Given an esy.json manifest, it will fetch the archive (tar, zip etc), extract it, and echo the path where sources have been extracted")
+  .description(
+    "Given an esy.json manifest, it will fetch the archive (tar, zip etc), extract it, and echo the path where sources have been extracted"
+  )
   .action(async () => {
     const { cwd = process.cwd() } = program.opts();
-    await commandDefs.fetch(cwd);
+    await commandDefs.fetch(cwd).catch(globalErrorHandler);
   });
 
 program.parse(process.argv);
