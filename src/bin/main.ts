@@ -4,8 +4,7 @@ import * as commandDefs from "../lib/commands";
 const version = require("../../package.json").version;
 
 function globalErrorHandler(e) {
-  if (e.errno === -3008) {
-    // ENOTFOUND
+  if (e.errno === -3008 /* ENOTFOUND */ || e.errno === -3001 /* EAI_AGAIN */) {
     console.log("Could not find the source URL");
   } else {
     console.log(e.message);
