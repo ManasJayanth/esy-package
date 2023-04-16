@@ -43,6 +43,7 @@ program
 
 program
   .command("fetch")
+  .option("-C, --cwd [cwd]", "Set current working directory")
   .description(
     "Given an esy.json manifest, it will fetch the archive (tar, zip etc), extract it, and echo the path where sources have been extracted"
   )
