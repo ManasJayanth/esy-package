@@ -9,6 +9,12 @@ function globalErrorHandler(e) {
     console.log("Could not find the source URL");
   } else {
     console.log(e.message);
+    if (e.stdout) {
+      console.log(e.stdout.toString());
+    }
+    if (e.stderr) {
+      console.log(e.stderr.toString());
+    }
   }
   process.exit(-1);
 }
