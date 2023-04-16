@@ -4,7 +4,7 @@ import * as path from "path";
 import * as os from "os";
 import * as url from "url";
 import * as fs from "fs";
-import { mkdirpSync, fetch, copy } from "./utils";
+import { mkdirpSync, fetch, copy, filterComments } from "./utils";
 import * as Npm from "./npm-session";
 import * as NpmClient from "./npm-client";
 import { REGISTRY_HOST, localNpmRc } from "../config";
@@ -13,35 +13,14 @@ import * as Defaults from "./defaults";
 
 const debug = Debug("bale:package:info");
 
-function filterComments(o = {}) {
-  return Object.keys(o)
-    .filter((k) => !k.startsWith("//"))
-    .reduce((acc, k) => {
-      acc[k] = o[k];
-      return acc;
-    }, {});
-}
-
 export async function pack(cwd) {
   let manifest = EsyPackage.getManifest(cwd);
   let {
     name,
     version,
-    description,
     override: { build, install, buildsInSource, dependencies },
   } = manifest;
   let pkgPath = await EsyPackage.fetch(cwd);
-  let buildEnv = filterComments(manifest.override.buildEnv);
-  let exportedEnv = filterComments(manifest.override.exportedEnv);
-  let esy = { buildsInSource, build, install, buildEnv, exportedEnv };
-  let patchFilesPath = path.join(cwd, "files");
-  if (fs.existsSync(patchFilesPath)) {
-    copy(patchFilesPath, pkgPath);
-  }
-  fs.writeFileSync(
-    path.join(pkgPath, "package.json"),
-    JSON.stringify({ name, version, description, esy, dependencies }, null, 2)
-  );
   fs.writeFileSync(
     path.join(pkgPath, ".npmignore"),
     `

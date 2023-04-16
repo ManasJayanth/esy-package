@@ -151,3 +151,12 @@ export async function download(urlStrWithChecksum, pkgPath) {
     }
   }
 }
+
+export function filterComments(o = {}) {
+  return Object.keys(o)
+    .filter((k) => !k.startsWith("//"))
+    .reduce((acc, k) => {
+      acc[k] = o[k];
+      return acc;
+    }, {});
+}
