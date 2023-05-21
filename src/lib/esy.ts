@@ -1,4 +1,5 @@
 import type { path, ProcessOutput } from "../types";
+import * as Log from "../logger";
 import * as cp from "child_process";
 import Path from "path";
 import Os from "os";
@@ -9,17 +10,21 @@ import Debug from "debug";
 
 const debug = Debug("bale:esy");
 
+function craftEnv(registryUrl: string, prefixPath: string) {
+  return {
+    NPM_CONFIG_REGISTRY: registryUrl,
+    ESY__PREFIX: prefixPath,
+    ...process.env,
+  };
+}
+
 async function subcommand(
   cmd: string,
   cwd: path,
   prefixPath: path
 ): Promise<ProcessOutput> {
+  let env = craftEnv(REGISTRY_URL, prefixPath);
   return new Promise(function (resolve, reject) {
-    let env = {
-      NPM_CONFIG_REGISTRY: REGISTRY_URL,
-      ESY__PREFIX: prefixPath,
-      ...process.env,
-    };
     debug(cwd);
     debug(env);
     let execCmd: string;
@@ -35,7 +40,6 @@ async function subcommand(
       {
         cwd,
         env,
-	maxBuffer: 1024 * 500
       },
       (error: Error, stdout: string, stderr: string) => {
         if (error) {
@@ -48,9 +52,33 @@ async function subcommand(
   });
 }
 
-export async function esy(opts: Opts): Promise<ProcessOutput> {
+export async function esy(opts: Opts): Promise<void> {
   let { cwd, prefixPath } = opts;
-  return subcommand("", cwd, prefixPath);
+  let env = craftEnv(REGISTRY_URL, prefixPath);
+  return new Promise(function (resolve, reject) {
+    debug(cwd);
+    debug(env);
+    let execCmd = "esy";
+    debug(`Running cmd: ${execCmd}`);
+    // TODO santise subcommand
+    let esy = cp.spawn(execCmd, [], {
+      cwd,
+      env,
+    });
+    esy.stdout.on("data", (c) => {
+      Log.process("esy:stdout", c.toString());
+    });
+    esy.stderr.on("data", (c) => {
+      Log.process("esy:stderr", c.toString());
+    });
+    esy.on("close", (exitCode) => {
+      if (exitCode !== 0) {
+        reject(new Error("esy returned non-zero exit code"));
+      } else {
+        resolve();
+      }
+    });
+  });
 }
 
 export async function esyi(opts: Opts): Promise<ProcessOutput> {
