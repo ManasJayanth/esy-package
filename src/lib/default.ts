@@ -16,7 +16,6 @@ function cleanup(server: any): void {
   NpmServer.stop(server);
 }
 
-
 export async function defaultCommand(
   pack: string,
   cwd: path,
@@ -68,7 +67,7 @@ export async function defaultCommand(
         await esyi({ cwd: testProjectPath, prefixPath })
       );
       Log.info("Running esy");
-      Log.process("esy", await esy({ cwd: testProjectPath, prefixPath }));
+      await esy({ cwd: testProjectPath, prefixPath });
     });
     returnStatus = 0;
   } catch (e) {
