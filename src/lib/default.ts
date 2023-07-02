@@ -6,8 +6,11 @@ import type { path } from "../types";
 import * as Log from "../logger";
 import * as Defaults from "./defaults";
 import { esy, esyi, withPrefixPath } from "./esy";
-import { packAndPublish } from "./shared";
-import { withVerdaccioRunning, runTestProject } from "./esy-package";
+import {
+  withVerdaccioRunning,
+  runTestProject,
+  packAndPublish,
+} from "./esy-package";
 import { withTemporaryTestProject } from "./utils";
 
 export async function defaultCommand(
