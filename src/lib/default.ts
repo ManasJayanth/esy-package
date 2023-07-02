@@ -14,7 +14,7 @@ export async function defaultCommand(
   cwd: path,
   storagePath: path = Defaults.storagePath
 ) {
-  await withVerdaccioRunning(storagePath, () => {
+  return withVerdaccioRunning(storagePath, async () => {
     try {
       await packAndPublish(pack, cwd, storagePath);
       Log.info("Running test project");

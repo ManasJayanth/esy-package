@@ -20,7 +20,7 @@ const Node = {
   path: nodePath,
 };
 
-export async function pack(cwd) {
+export async function npmPack(cwd) {
   let manifest = EsyPackage.getManifest(cwd);
   let {
     name,
@@ -68,10 +68,10 @@ export async function packAndPublish(
   storagePath: path = Defaults.storagePath
 ) {
   Log.info("Setting up");
-  await withVerdaccioRunning(storagePath, (server) => {
+  await withVerdaccioRunning(storagePath, async (server) => {
     Log.info("Verdaccio registry started");
     Log.info("Setting up verdaccio user session");
-    await Bale.createSession(server);
+    await createSession(server);
     Log.info("Packaging");
     if (pack) {
       pack
@@ -81,7 +81,7 @@ export async function packAndPublish(
           cp.execSync(command);
         });
     } else {
-      await Bale.pack(cwd);
+      await npmPack(cwd);
     }
     let tarballPath = `${cwd}/package.tar.gz`;
     Log.process(
