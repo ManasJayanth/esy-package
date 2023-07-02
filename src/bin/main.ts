@@ -20,6 +20,12 @@ function globalErrorHandler(e) {
 
 const program = new Command();
 
+type command = (a: void) => Promise<number>;
+
+async function runCommand(f: command): Promise<void> {
+  return f().then(process.exit).catch(globalErrorHandler);
+}
+
 program.version(version);
 
 program
@@ -34,7 +40,7 @@ program
   )
   .action(async () => {
     const { pack, cwd = process.cwd() } = program.opts();
-    await commandDefs.defaultCommand(pack, cwd).catch(globalErrorHandler);
+    await runCommand(() => commandDefs.defaultCommand(pack, cwd));
   });
 
 program
@@ -44,7 +50,7 @@ program
   )
   .action(async () => {
     const { cwd = process.cwd() } = program.opts();
-    await commandDefs.pkg(cwd).catch(globalErrorHandler);
+    await runCommand(() => commandDefs.pkg(cwd));
   });
 
 program
@@ -55,7 +61,18 @@ program
   )
   .action(async () => {
     const { cwd = process.cwd() } = program.opts();
-    await commandDefs.fetch(cwd).catch(globalErrorHandler);
+    await runCommand(() => commandDefs.fetch(cwd));
+  });
+
+program
+  .command("build-shell")
+  .option("-C, --cwd [cwd]", "Set current working directory")
+  .description(
+    "Given an esy.json manifest, it will build and publish the package to a local verdaccio and create a esy build-shell to debug"
+  )
+  .action(async () => {
+    const { cwd = process.cwd() } = program.opts();
+    await runCommand(() => commandDefs.buildShell(cwd));
   });
 
 program.parse(process.argv);

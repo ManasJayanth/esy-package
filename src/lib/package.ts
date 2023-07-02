@@ -190,7 +190,7 @@ function unzip(filePath: string, destDir: string) {
   cp.execSync(`unzip -o ${filePath} -d ${destDir}`);
 }
 
-export async function pkg(cwd: path) {
+export async function pkg(cwd: path): Promise<number> {
   let manifest = require(path.join(cwd, "esy.json"));
 
   let {
@@ -244,5 +244,6 @@ export async function pkg(cwd: path) {
 _esy
 `
       );
+      return 0;
     });
 }

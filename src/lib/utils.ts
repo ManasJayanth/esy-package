@@ -3,6 +3,7 @@ import * as path from "path";
 import * as url from "url";
 import * as os from "os";
 import * as cp from "child_process";
+import * as Defaults from "./defaults";
 import { uncompress } from "./compression";
 import * as crypto from "crypto";
 

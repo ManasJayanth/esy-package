@@ -39,8 +39,8 @@ export function init(
       cache,
       "1.0.0",
       "verdaccio",
-      (webServer, addrs, pkgName, pkgVersion) => {
-        resolve({ server: webServer, addrs, pkgName, pkgVersion });
+      (webServer, address, pkgName, pkgVersion) => {
+        resolve({ server: webServer, address, pkgName, pkgVersion });
       }
     );
   });
@@ -51,11 +51,11 @@ function delay(ms: number) {
 }
 
 export function start(args: any): Promise<void> {
-  let { server, addrs } = args;
+  let { server, address } = args;
   return new Promise((resolve, reject) => {
     try {
       server.unref();
-      server.listen(addrs.port || addrs.path, addrs.host, () => {
+      server.listen(address.port || address.path, address.host, () => {
         // A delay of 2.5 seconds to let the plugins load.
         // it was noticed in the CI logs that auth began before the plugin was loaded
         delay(2500).then(resolve);
@@ -66,7 +66,7 @@ export function start(args: any): Promise<void> {
   });
 }
 
-export function stop(args) {
+export function stop(args: any) {
   let { server } = args;
   server.close();
 }
