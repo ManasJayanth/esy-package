@@ -5,7 +5,7 @@ import Path from "path";
 import Os from "os";
 import rimraf from "rimraf";
 import { REGISTRY_URL } from "../config";
-type Opts = { cwd: path; prefixPath: path };
+type Opts = { cwd: path; prefixPath: path; pkg?: string };
 import Debug from "debug";
 
 const debug = Debug("bale:esy");
@@ -84,6 +84,11 @@ export async function esy(opts: Opts): Promise<void> {
 export async function esyi(opts: Opts): Promise<ProcessOutput> {
   let { cwd, prefixPath } = opts;
   return subcommand("install", cwd, prefixPath);
+}
+
+export async function esyBuildShell(opts: Opts): Promise<ProcessOutput> {
+  let { cwd, prefixPath, pkg } = opts;
+  return subcommand(`build-shell ${pkg ? "-p " + pkg : ""}`, cwd, prefixPath);
 }
 
 export async function withPrefixPath(

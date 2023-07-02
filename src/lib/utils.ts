@@ -1,11 +1,12 @@
-import * as fs from "fs";
+import * as fs from "fs-extra";
 import * as path from "path";
 import * as url from "url";
-import * as os from "os";
+import * as Os from "os";
 import * as cp from "child_process";
 import * as Defaults from "./defaults";
 import { uncompress } from "./compression";
 import * as crypto from "crypto";
+import * as Log from "../logger";
 
 function computeChecksum(filePath, algo) {
   return new Promise((resolve, reject) => {
@@ -94,7 +95,7 @@ export async function download(urlStrWithChecksum, pkgPath) {
   }
   let urlObj = url.parse(urlStr);
   let filename = path.basename(urlObj.path);
-  let tmpDownloadedPath = path.join(os.tmpdir(), "esy-package-" + filename);
+  let tmpDownloadedPath = path.join(Os.tmpdir(), "esy-package-" + filename);
 
   let protoParts = urlObj.protocol.split("+");
 
@@ -160,4 +161,12 @@ export function filterComments(o = {}) {
       acc[k] = o[k];
       return acc;
     }, {});
+}
+
+export async function withTemporaryTestProject(f: any): Promise<any> {
+  let testProjectPath = path.join(Os.tmpdir(), "esy-test");
+  Log.info("Clearing path meant for test project", testProjectPath);
+  await fs.remove(testProjectPath);
+  await f(testProjectPath);
+  await fs.remove(testProjectPath);
 }

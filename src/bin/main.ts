@@ -65,14 +65,22 @@ program
   });
 
 program
+  .option(
+    "-s, --storage-path [path]",
+    "Path that verdaccio can use for storage as it runs the tests"
+  )
+  .option(
+    "-p, --pack [packingCommands]",
+    "Specify sequence of commands, separated by &&, to package for NPM"
+  )
   .command("build-shell")
   .option("-C, --cwd [cwd]", "Set current working directory")
   .description(
     "Given an esy.json manifest, it will build and publish the package to a local verdaccio and create a esy build-shell to debug"
   )
   .action(async () => {
-    const { cwd = process.cwd() } = program.opts();
-    await runCommand(() => commandDefs.buildShell(cwd));
+    const { cwd = process.cwd(), pack, storagePath } = program.opts();
+    await runCommand(() => commandDefs.buildShell(cwd, storagePath, pack));
   });
 
 program.parse(process.argv);

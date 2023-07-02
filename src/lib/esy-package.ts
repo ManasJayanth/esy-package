@@ -3,7 +3,13 @@ import * as fs from "fs-extra";
 import nodePath from "path";
 import * as NpmServer from "../lib/npm-server";
 import * as Defaults from "./defaults";
-import { mkdirpSync, download, copy, filterComments } from "./utils";
+import {
+  withTemporaryTestProject,
+  mkdirpSync,
+  download,
+  copy,
+  filterComments,
+} from "./utils";
 import * as Log from "../logger";
 import { REGISTRY_ADDR, REGISTRY_PORT, REGISTRY_URL } from "../config";
 
@@ -13,6 +19,7 @@ import * as Npm from "./npm-session";
 import * as NpmClient from "./npm-client";
 import { REGISTRY_HOST, localNpmRc } from "../config";
 import * as EsyPackage from "./esy-package";
+import { withPrefixPath, esyBuildShell, esyi, esy } from "./esy";
 
 const debug = Debug("esy-package:package");
 
@@ -155,4 +162,46 @@ export async function fetch(cwd: path): Promise<path> {
   return pkgPath;
 }
 
-export async function buildShell(cwd: path): Promise<void> {}
+export async function buildShell(
+  cwd: path,
+  storagePath: path,
+  pack: string
+): Promise<void> {
+  return withTemporaryTestProject(async (testProjectPath) => {
+    return withVerdaccioRunning(storagePath, async () => {
+      try {
+        await packAndPublish(pack, cwd, storagePath);
+        Log.info("Running test project");
+        fs.copySync("./esy-test", testProjectPath, { overwrite: true });
+        await withPrefixPath(async (prefixPath) =>
+          runTestProjectBuildShell(testProjectPath, prefixPath)
+        );
+        return 0;
+      } catch (e) {
+        Log.error(e.message);
+        Log.error(e.stack);
+        return -1;
+      }
+    });
+  });
+}
+
+export async function runTestProject(
+  testProjectPath: path,
+  prefixPath: path
+): Promise<void> {
+  Log.info("Running esy install");
+  Log.process("esy-install", await esyi({ cwd: testProjectPath, prefixPath }));
+  Log.info("Running esy");
+  await esy({ cwd: testProjectPath, prefixPath });
+}
+
+export async function runTestProjectBuildShell(
+  testProjectPath: path,
+  prefixPath: path
+): Promise<void> {
+  Log.info("Running esy install");
+  Log.process("esy-install", await esyi({ cwd: testProjectPath, prefixPath }));
+  Log.info("Running esy");
+  await esyBuildShell({ cwd: testProjectPath, prefixPath });
+}
