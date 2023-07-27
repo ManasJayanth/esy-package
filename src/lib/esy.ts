@@ -64,12 +64,13 @@ export async function esy(opts: Opts): Promise<void> {
     let esy = cp.spawn(execCmd, [], {
       cwd,
       env,
+      stdio: "pipe",
     });
     esy.stdout.on("data", (c) => {
-      Log.process("esy:stdout", c.toString());
+      Log.info("esy:stdout", c.toString());
     });
     esy.stderr.on("data", (c) => {
-      Log.process("esy:stderr", c.toString());
+      Log.info("esy:stderr", c.toString());
     });
     esy.on("close", (exitCode) => {
       if (exitCode !== 0) {

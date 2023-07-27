@@ -20,6 +20,7 @@ export function uncompress(pathStr, pkgPath) {
     case ".gz":
       tar(pathStr, pkgPath, true);
       break;
+    case ".bz2":
     case ".xz":
       tar(pathStr, pkgPath);
       break;
