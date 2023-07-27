@@ -8,7 +8,7 @@ import * as crypto from "crypto";
 import type { path as $path } from "../types";
 import type { UrlWithStringQuery } from "url";
 
-function cygpath(path: string) {
+export function cygpath(path: string) {
   let platform: string;
   try {
     platform = cp.execSync("uname").toString().trim();

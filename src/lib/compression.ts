@@ -1,6 +1,6 @@
 import * as cp from "child_process";
 import * as path from "path";
-import { pathNormalise } from "./utils";
+import { pathNormalise, cygpath } from "./utils";
 
 export function tar(filePath, destDir, gzip?) {
   filePath = pathNormalise(filePath);
@@ -15,6 +15,7 @@ export function unzip(filePath, destDir) {
 }
 
 export function uncompress(pathStr, pkgPath) {
+  pathStr = cygpath(pathStr);
   switch (path.extname(pathStr)) {
     case ".tgz":
     case ".gz":
