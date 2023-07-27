@@ -22,15 +22,18 @@ beforeAll(() => {
   );
 });
 
-
 test("End-to-end: success case: fetch sources for a valid manifest", () => {
   try {
     let stdout = Node.cp.execSync(`${ESY_PACKAGE_CMD} fetch`, {
       cwd: testProjectPath,
       env: { DEBUG: "bale*", ...process.env },
-      stdio: 'pipe'
+      stdio: "pipe",
     });
-    expect(stdout.toString()).toContain(Node.path.join("_esy-package","test-hello-c-0.1.0"));
+    expect(
+      Node.fs
+        .readdirSync(Node.path.join(testProjectPath, "_esy-package"))
+        .join(" ")
+    ).toContain("test-hello-c-0.1.0");
   } catch (e) {
     console.log(e);
     throw e;

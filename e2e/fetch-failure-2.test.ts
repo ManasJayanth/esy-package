@@ -22,13 +22,12 @@ beforeAll(() => {
   );
 });
 
-
 test("End-to-end: failure case 2: trying to fetch sources for a valid manifest but with non-existent URL", () => {
   try {
     let stdout = Node.cp.execSync(`${ESY_PACKAGE_CMD} fetch`, {
       cwd: testProjectPath,
       env: { DEBUG: "bale*", ...process.env },
-      stdio: 'pipe'
+      stdio: "pipe",
     });
     throw new Error("Should have thrown");
   } catch (e) {
