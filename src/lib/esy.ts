@@ -11,11 +11,13 @@ import Debug from "debug";
 const debug = Debug("bale:esy");
 
 function craftEnv(registryUrl: string, prefixPath: string) {
-  return {
+  let env = {
     NPM_CONFIG_REGISTRY: registryUrl,
     ESY__PREFIX: prefixPath,
     ...process.env,
   };
+  delete env["_"];
+  return env;
 }
 
 async function subcommand(
