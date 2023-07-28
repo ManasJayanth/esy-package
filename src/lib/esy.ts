@@ -24,6 +24,7 @@ async function subcommand(
   prefixPath: path
 ): Promise<ProcessOutput> {
   let env = craftEnv(REGISTRY_URL, prefixPath);
+  delete env["_"];
   return new Promise(function (resolve, reject) {
     debug(cwd);
     debug(env);
