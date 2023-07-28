@@ -58,7 +58,7 @@ export async function esy(opts: Opts): Promise<void> {
   return new Promise(function (resolve, reject) {
     debug(cwd);
     debug(env);
-    let execCmd = "esy";
+    let execCmd = "esy" + (process.platform === "win32" ? ".cmd" : "");
     debug(`Running cmd: ${execCmd}`);
     // TODO santise subcommand
     let esy = cp.spawn(execCmd, [], {
