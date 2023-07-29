@@ -52,4 +52,14 @@ program
     await commandDefs.fetch(cwd).catch(globalErrorHandler);
   });
 
+let patchCommand = program
+  .command("patch")
+  .description(
+    "Prepare patch files. Drops into a shell session with test project as current directory. Users can edit files and once finished patching the sources, can simply exit the session like any bash session. esy-package will prepare patches that can be applied later."
+  )
+  .action(async () => {
+    const { cwd = process.cwd() } = program.opts();
+    await commandDefs.patch(cwd);
+  });
+
 program.parse(process.argv);
