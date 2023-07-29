@@ -16,6 +16,7 @@ export function unzip(filePath, destDir) {
 
 export function uncompress(pathStr, pkgPath) {
   pathStr = cygpath(pathStr);
+  pkgPath = cygpath(pkgPath);
   switch (path.extname(pathStr)) {
     case ".tgz":
     case ".gz":
