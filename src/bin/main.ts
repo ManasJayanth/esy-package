@@ -19,6 +19,10 @@ program.version(version);
 program
   .option("-C, --cwd [cwd]", "Set current working directory")
   .option(
+    "-i, --prefix-path [path]",
+    "Path that esy can use for cache area as it runs the tests"
+  )
+  .option(
     "-s, --storage-path [path]",
     "Path that verdaccio can use for storage as it runs the tests"
   )
@@ -27,9 +31,14 @@ program
     "Specify sequence of commands, separated by &&, to package for NPM"
   )
   .action(async () => {
-    const { pack, cwd = process.cwd(), storagePath } = program.opts();
+    const {
+      pack,
+      cwd = process.cwd(),
+      storagePath,
+      prefixPath,
+    } = program.opts();
     await commandDefs
-      .defaultCommand(pack, cwd, storagePath)
+      .defaultCommand(pack, cwd, storagePath, prefixPath)
       .catch(globalErrorHandler);
   });
 
