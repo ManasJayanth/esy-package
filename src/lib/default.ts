@@ -19,7 +19,8 @@ function cleanup(server: any): void {
 export async function defaultCommand(
   pack: string,
   cwd: path,
-  storagePath: path = Defaults.storagePath
+  storagePath: path = Defaults.storagePath,
+  prefixPath: path = null
 ) {
   let returnStatus: number;
   Log.info("Setting up");
@@ -60,7 +61,8 @@ export async function defaultCommand(
     Log.info("Clearing path meant for test project", testProjectPath);
     rimraf.sync(testProjectPath);
     fse.copySync("./esy-test", testProjectPath, { overwrite: true });
-    await withPrefixPath(async (prefixPath) => {
+    if (prefixPath) {
+      Log.info("User provided prefix path", prefixPath);
       Log.info("Running esy install");
       Log.process(
         "esy-install",
@@ -68,7 +70,17 @@ export async function defaultCommand(
       );
       Log.info("Running esy");
       await esy({ cwd: testProjectPath, prefixPath });
-    });
+    } else {
+      await withPrefixPath(async (prefixPath) => {
+        Log.info("Running esy install");
+        Log.process(
+          "esy-install",
+          await esyi({ cwd: testProjectPath, prefixPath })
+        );
+        Log.info("Running esy");
+        await esy({ cwd: testProjectPath, prefixPath });
+      });
+    }
     returnStatus = 0;
   } catch (e) {
     Log.error(e.message);
