@@ -27,8 +27,10 @@ program
     "Specify sequence of commands, separated by &&, to package for NPM"
   )
   .action(async () => {
-    const { pack, cwd = process.cwd() } = program.opts();
-    await commandDefs.defaultCommand(pack, cwd).catch(globalErrorHandler);
+    const { pack, cwd = process.cwd(), storagePath } = program.opts();
+    await commandDefs
+      .defaultCommand(pack, cwd, storagePath)
+      .catch(globalErrorHandler);
   });
 
 program
