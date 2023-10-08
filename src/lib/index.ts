@@ -22,38 +22,6 @@ function filterComments(o = {}) {
     }, {});
 }
 
-export async function pack(cwd) {
-  let manifest = EsyPackage.getManifest(cwd);
-  let {
-    name,
-    version,
-    description,
-    override: { build, install, buildsInSource, dependencies },
-  } = manifest;
-  let pkgPath = await EsyPackage.fetch(cwd);
-  let buildEnv = filterComments(manifest.override.buildEnv);
-  let exportedEnv = filterComments(manifest.override.exportedEnv);
-  let esy = { buildsInSource, build, install, buildEnv, exportedEnv };
-  let patchFilesPath = path.join(cwd, "files");
-  if (fs.existsSync(patchFilesPath)) {
-    copy(patchFilesPath, pkgPath);
-  }
-  fs.writeFileSync(
-    path.join(pkgPath, "package.json"),
-    JSON.stringify({ name, version, description, esy, dependencies }, null, 2)
-  );
-  fs.writeFileSync(
-    path.join(pkgPath, ".npmignore"),
-    `
-_esy
-`
-  );
-  await NpmClient.pack(pkgPath);
-  let packageTarGzPath = path.join(cwd, "package.tar.gz");
-  debug("Package tarball path that will be published", packageTarGzPath);
-  fs.renameSync(path.join(pkgPath, `${name}-${version}.tgz`), packageTarGzPath);
-}
-
 export * from "./npm-session";
 
 export async function createSession(): Promise<string> {

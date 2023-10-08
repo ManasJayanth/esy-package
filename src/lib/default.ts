@@ -8,6 +8,7 @@ import * as NpmClient from "../lib/npm-client";
 import type { path } from "../types";
 import * as rimraf from "rimraf";
 import * as Log from "../logger";
+import { pkg } from "./package";
 import * as Defaults from "./defaults";
 import { esy, esyi, withPrefixPath } from "./esy";
 import { REGISTRY_ADDR, REGISTRY_PORT, REGISTRY_URL } from "../config";
@@ -48,7 +49,7 @@ export async function defaultCommand(
           cp.execSync(command);
         });
     } else {
-      await Bale.pack(cwd);
+      await pkg(cwd);
     }
     Log.info("Verdaccio registry started");
     let tarballPath = `${cwd}/package.tar.gz`;
