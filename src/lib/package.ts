@@ -28,9 +28,11 @@ export async function pkg(cwd: $path) {
   let {
     source,
     name,
+    esy: esyConfig,
     version,
     description,
     override: { build, install, buildsInSource, dependencies },
+    resolutions,
   } = manifest;
   let esyPackageDir = path.join(cwd, "_esy-package");
   await fs.mkdirp(esyPackageDir);
@@ -46,14 +48,22 @@ export async function pkg(cwd: $path) {
     }
     let buildEnv = filterComments(manifest.override.buildEnv);
     let exportedEnv = filterComments(manifest.override.exportedEnv);
-    let esy = { buildsInSource, build, install, buildEnv, exportedEnv };
+    let esy = Object.assign(
+      {},
+      { buildsInSource, build, install, buildEnv, exportedEnv },
+      esyConfig
+    );
     let patchFilesPath = path.join(cwd, "files");
     if (fs.existsSync(patchFilesPath)) {
       await copy(patchFilesPath, pkgPath);
     }
     fs.writeFileSync(
       path.join(pkgPath, "package.json"),
-      JSON.stringify({ name, version, description, esy, dependencies }, null, 2)
+      JSON.stringify(
+        { name, version, description, esy, dependencies, resolutions },
+        null,
+        2
+      )
     );
     fs.writeFileSync(
       path.join(pkgPath, ".npmignore"),
