@@ -168,7 +168,7 @@ export async function download(urlStrWithChecksum: $path, pkgPath: $path) {
       if (fs.existsSync(destDir)) {
         throw new Error("TODO: run rm -rf");
       } else {
-        cp.execSync(`git clone ${gitUrl} ${destDir}`); // TODO: not network resilient. Any interruptions will corrupt the path
+        cp.execSync(`git clone --recurse-submodules ${gitUrl} ${destDir}`); // TODO: not network resilient. Any interruptions will corrupt the path
         let commitHash = checksum;
         cp.execSync(`git -C ${destDir} checkout ${commitHash}`);
         return;
