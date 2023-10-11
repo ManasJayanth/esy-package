@@ -5,8 +5,11 @@ const crypto = require("crypto");
 const url = require("url");
 const cp = require("child_process");
 import { download } from "./utils";
+import * as NpmClient from "./npm-client";
 import * as EsyPackage from "./esy-package";
 import type { path as $path } from "../types";
+import Debug from "debug";
+const debug = Debug("bale:package:info");
 
 async function copy(src: string, dest: string) {
   let srcStat = fs.statSync(src);
@@ -71,5 +74,13 @@ export async function pkg(cwd: $path) {
 _esy
 `
     );
+    await NpmClient.pack(pkgPath);
+    let packageTarGzPath = path.join(cwd, "package.tar.gz");
+    debug("Package tarball path that can be published", packageTarGzPath);
+    fs.renameSync(
+      path.join(pkgPath, `${name}-${version}.tgz`),
+      packageTarGzPath
+    );
+    return { pkgPath, packageTarGzPath };
   });
 }

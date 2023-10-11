@@ -11,7 +11,7 @@ import { REGISTRY_HOST, localNpmRc } from "../config";
 import * as EsyPackage from "./esy-package";
 import * as Defaults from "./defaults";
 
-const debug = Debug("bale:package:info");
+const debug = Debug("bale:lib:info");
 
 function filterComments(o = {}) {
   return Object.keys(o)
