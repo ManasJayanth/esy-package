@@ -3,6 +3,7 @@ import Path from "path";
 import startVerdaccio from "verdaccio";
 
 export function init(
+  testPackageName: string,
   configPath: path,
   storagePath: path,
   addr: string,
@@ -16,16 +17,29 @@ export function init(
     },
     logs: { type: "stdout", format: "json", level: "http" },
     listen: { "": `${addr}:${port}` },
+    uplinks: {
+      npmjs: {
+        url: "https://registry.npmjs.org/",
+      },
+    },
     packages: {
+      [testPackageName]: {
+        access: "$anonymous",
+        publish: "$all",
+        unpublish: "$anonymous",
+        proxy: [],
+      },
       "@*/*": {
         access: "$anonymous",
         publish: "$all",
         unpublish: "$anonymous",
+        proxy: ["npmjs"],
       },
       "**": {
         access: "$anonymous",
         publish: "$all",
         unpublish: "$anonymous",
+        proxy: ["npmjs"],
       },
     },
     max_body_size: "1000mb",
@@ -54,7 +68,7 @@ export function start(args: any): Promise<void> {
   let { server, addrs } = args;
   return new Promise((resolve, reject) => {
     try {
-      server.unref();
+      // server.unref();
       server.listen(addrs.port || addrs.path, addrs.host, () => {
         // A delay of 2.5 seconds to let the plugins load.
         // it was noticed in the CI logs that auth began before the plugin was loaded

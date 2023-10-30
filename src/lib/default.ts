@@ -23,6 +23,7 @@ export async function defaultCommand(
   storagePath: path = Defaults.storagePath,
   prefixPath: path = null
 ) {
+  let manifest = require(Path.join(cwd, "esy.json"));
   let returnStatus: number;
   Log.info("Setting up");
   Log.info("Clearing storage path meant for verdaccio", storagePath);
@@ -31,6 +32,7 @@ export async function defaultCommand(
   let server: any;
   Log.info("Initialising verdaccio server");
   server = await NpmServer.init(
+    manifest.name,
     "/unnecessary-path.yml",
     storagePath,
     REGISTRY_ADDR,
