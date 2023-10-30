@@ -14,7 +14,7 @@ export function init(
     auth: {
       htpasswd: { file: Path.join(__dirname, "htpasswd") },
     },
-    logs: { type: "stdout", format: "pretty", level: "http" },
+    logs: { type: "stdout", format: "json", level: "http" },
     listen: { "": `${addr}:${port}` },
     packages: {
       "@*/*": {
