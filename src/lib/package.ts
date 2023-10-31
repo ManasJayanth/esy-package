@@ -77,8 +77,9 @@ _esy
     await NpmClient.pack(pkgPath);
     let packageTarGzPath = path.join(cwd, "package.tar.gz");
     debug("Package tarball path that can be published", packageTarGzPath);
+    let sluggifiedName = name.replace("@", "").replace("/", "-");
     fs.renameSync(
-      path.join(pkgPath, `${name}-${version}.tgz`),
+      path.join(pkgPath, `${sluggifiedName}-${version}.tgz`),
       packageTarGzPath
     );
     return { pkgPath, packageTarGzPath };
