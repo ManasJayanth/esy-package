@@ -71,7 +71,7 @@ export function fetch(urlObj: UrlWithStringQuery, pathStr: string) {
       break;
     default:
       throw new Error(
-        `fetch(): Unrecognised protocol in provided url: ${url.format(urlObj)}`
+        `fetch(): Unrecognised protocol in provided url: ${url.format(urlObj)}`,
       );
   }
   return new Promise(function (resolve, reject) {
@@ -87,7 +87,9 @@ export function fetch(urlObj: UrlWithStringQuery, pathStr: string) {
               resolve(pathStr);
             });
         } else {
-          reject(new Error("non 200 statusCode"));
+          reject(
+            new Error(`Non 200 statusCode for url: ${url.format(urlObj)}`),
+          );
         }
       })
       .on("error", reject);
@@ -188,14 +190,14 @@ export async function download(urlStrWithChecksum: $path, pkgPath: $path) {
     urlStr,
     downloadPath,
     checksumAlgo,
-    hashStr
+    hashStr,
   ) {
     let tmpDownloadPath = downloadPath + ".tmp";
     await fetch(url.parse(urlStr), tmpDownloadPath);
     let checksum = await computeChecksum(tmpDownloadPath, checksumAlgo);
     if (hashStr !== checksum) {
       throw new Error(
-        `Downloaded by checksum failed. url: ${url} downloadPath: ${downloadPath} checksum expected: ${hashStr} checksum computed: ${checksum} checksum algorithm: ${checksumAlgo}`
+        `Downloaded by checksum failed. url: ${url} downloadPath: ${downloadPath} checksum expected: ${hashStr} checksum computed: ${checksum} checksum algorithm: ${checksumAlgo}`,
       );
     } else {
       await fs.move(tmpDownloadPath, downloadPath);
