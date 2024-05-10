@@ -18,7 +18,7 @@ beforeAll(() => {
   testProjectPath = commonSetup(testProjectDir);
   Node.fs.copyFileSync(
     Node.path.join(__dirname, testManifestFilename),
-    Node.path.join(testProjectPath, "esy.json")
+    Node.path.join(testProjectPath, "esy.json"),
   );
 });
 
@@ -32,7 +32,7 @@ test("End-to-end: success case: fetch sources for a valid manifest", () => {
     expect(
       Node.fs
         .readdirSync(Node.path.join(testProjectPath, "_esy-package"))
-        .join(" ")
+        .join(" "),
     ).toContain("test-hello-c-0.1.0");
   } catch (e) {
     console.log(e);

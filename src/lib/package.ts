@@ -54,7 +54,7 @@ export async function pkg(cwd: $path) {
     let esy = Object.assign(
       {},
       { buildsInSource, build, install, buildEnv, exportedEnv },
-      esyConfig
+      esyConfig,
     );
     let patchFilesPath = path.join(cwd, "files");
     if (fs.existsSync(patchFilesPath)) {
@@ -65,14 +65,14 @@ export async function pkg(cwd: $path) {
       JSON.stringify(
         { name, version, description, esy, dependencies, resolutions },
         null,
-        2
-      )
+        2,
+      ),
     );
     fs.writeFileSync(
       path.join(pkgPath, ".npmignore"),
       `
 _esy
-`
+`,
     );
     await NpmClient.pack(pkgPath);
     let packageTarGzPath = path.join(cwd, "package.tar.gz");
@@ -80,7 +80,7 @@ _esy
     let sluggifiedName = name.replace("@", "").replace("/", "-");
     fs.renameSync(
       path.join(pkgPath, `${sluggifiedName}-${version}.tgz`),
-      packageTarGzPath
+      packageTarGzPath,
     );
     return { pkgPath, packageTarGzPath };
   });

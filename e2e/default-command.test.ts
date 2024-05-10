@@ -29,7 +29,7 @@ beforeAll(() => {
   // Copying the manifest for esy-hello
   Node.fs.copyFileSync(
     Node.path.join(__dirname, testManifestFilename),
-    Node.path.join(testProjectPath, "esy.json")
+    Node.path.join(testProjectPath, "esy.json"),
   );
 
   // Copying the manifest for esy-test/package.json
@@ -37,7 +37,7 @@ beforeAll(() => {
   fse.mkdirpSync(esyTestPath);
   Node.fs.copyFileSync(
     Node.path.join(__dirname, esyTestJson),
-    Node.path.join(esyTestPath, "esy.json")
+    Node.path.join(esyTestPath, "esy.json"),
   );
 });
 
@@ -62,7 +62,7 @@ test("End-to-end: success case: fetch sources for a valid manifest", () => {
       stdio: "pipe",
     });
     expect(stdout.toString()).toContain(
-      Node.path.join("_esy-package", "test-hello-c-0.1.0")
+      Node.path.join("_esy-package", "test-hello-c-0.1.0"),
     );
   } catch (e) {
     console.log(e);

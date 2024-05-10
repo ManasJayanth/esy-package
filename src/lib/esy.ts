@@ -23,7 +23,7 @@ function craftEnv(registryUrl: string, prefixPath: string) {
 async function subcommand(
   cmd: string,
   cwd: path,
-  prefixPath: path
+  prefixPath: path,
 ): Promise<ProcessOutput> {
   let env = craftEnv(REGISTRY_URL, prefixPath);
   delete env["_"];
@@ -50,7 +50,7 @@ async function subcommand(
         } else {
           resolve({ stdout, stderr });
         }
-      }
+      },
     );
   });
 }
@@ -91,7 +91,7 @@ export async function esyi(opts: Opts): Promise<ProcessOutput> {
 }
 
 export async function withPrefixPath(
-  f: (prefixPath: path) => Promise<void>
+  f: (prefixPath: path) => Promise<void>,
 ): Promise<void> {
   let prefixPath = Path.join(Os.tmpdir(), "bale-esy-prefix");
   debug("Clearing path meant for esy prefix", prefixPath);

@@ -35,7 +35,7 @@ function uname() {
         reject(
           new Error(`uname failed to run:
 exit code: ${code}
-stderr: ${stderr}`)
+stderr: ${stderr}`),
         );
       }
     });

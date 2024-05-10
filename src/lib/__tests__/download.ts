@@ -8,7 +8,7 @@ test("Must download a file correctly", async function () {
   let indexHTMLPath = path.join(tmp, "index.html");
   await download(
     "https://esy.sh#sha1:11f4a06342b45dbf9656cb7c2c11a48ee1055c6e",
-    indexHTMLPath
+    indexHTMLPath,
   );
   expect(fs.existsSync(indexHTMLPath)).toBe(true);
 });

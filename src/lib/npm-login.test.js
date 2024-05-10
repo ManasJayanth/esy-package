@@ -13,7 +13,7 @@ profile.loginCouch = jest
       });
     } else {
       return Promise.reject(
-        new Error("Type of this error doesn't matter as we disregard it")
+        new Error("Type of this error doesn't matter as we disregard it"),
       );
     }
   });

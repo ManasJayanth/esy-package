@@ -8,7 +8,7 @@ let localRegistryOpts = {
 
 async function handleLoginOrAdduser(
   username: string,
-  npmResponse: loginResponse | addUserResponse
+  npmResponse: loginResponse | addUserResponse,
 ): Promise<token> {
   let { ok, token, username: userNameFromResponse } = npmResponse;
   if (
@@ -19,7 +19,7 @@ async function handleLoginOrAdduser(
   ) {
     throw new Error(
       "Login failed because registry server sent unrecogised response " +
-        JSON.stringify(npmResponse)
+        JSON.stringify(npmResponse),
     );
   }
   return token;
@@ -28,12 +28,12 @@ async function handleLoginOrAdduser(
 // We write login and adduser by hand, because npm login doesn't provide a way to pass username creds easily
 export async function login(
   username: string,
-  password: string
+  password: string,
 ): Promise<token> {
   let npmResponse = await profile.loginCouch(
     username,
     password,
-    localRegistryOpts
+    localRegistryOpts,
   );
   return handleLoginOrAdduser(username, npmResponse);
 }
@@ -41,13 +41,13 @@ export async function login(
 export async function addUser(
   username: string,
   email: email,
-  password: string
+  password: string,
 ): Promise<token> {
   let npmResponse = await profile.adduserCouch(
     username,
     email,
     password,
-    localRegistryOpts
+    localRegistryOpts,
   );
   return handleLoginOrAdduser(username, npmResponse);
 }

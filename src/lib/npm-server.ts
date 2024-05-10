@@ -1,22 +1,22 @@
 import type { path } from "../types";
 import Path from "path";
-import startVerdaccio from "verdaccio";
+import { runServer } from "verdaccio";
 
-export function init(
+export async function init(
   testPackageName: string,
   configPath: path,
   storagePath: path,
   addr: string,
-  port: number
+  port: number,
 ) {
   let config = {
     storage: storagePath,
     self_path: configPath,
+    listen: `${addr}:${port}`,
     auth: {
       htpasswd: { file: Path.join(__dirname, "htpasswd") },
     },
     logs: { type: "stdout", format: "json", level: "http" },
-    listen: { "": `${addr}:${port}` },
     uplinks: {
       npmjs: {
         url: "https://registry.npmjs.org/",
@@ -44,20 +44,10 @@ export function init(
     },
     max_body_size: "1000mb",
   };
-  const cache = Path.join(__dirname, "cache");
 
-  return new Promise(function (resolve, reject) {
-    startVerdaccio(
-      config,
-      `${port}`,
-      cache,
-      "1.0.0",
-      "verdaccio",
-      (webServer, addrs, pkgName, pkgVersion) => {
-        resolve({ server: webServer, addrs, pkgName, pkgVersion });
-      }
-    );
-  });
+  // @ts-ignore
+  let server = await runServer(config);
+  return { port, addr, server };
 }
 
 function delay(ms: number) {
@@ -65,18 +55,12 @@ function delay(ms: number) {
 }
 
 export function start(args: any): Promise<void> {
-  let { server, addrs } = args;
+  let { port, addr, server } = args;
   return new Promise((resolve, reject) => {
-    try {
-      // server.unref();
-      server.listen(addrs.port || addrs.path, addrs.host, () => {
-        // A delay of 2.5 seconds to let the plugins load.
-        // it was noticed in the CI logs that auth began before the plugin was loaded
-        delay(2500).then(resolve);
-      });
-    } catch (error) {
-      reject(error);
-    }
+    // @ts-nocheck
+    server.listen(port, addr, (event) => {
+      delay(2500).then(resolve);
+    });
   });
 }
 

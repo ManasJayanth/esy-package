@@ -26,7 +26,7 @@ export async function fetch(cwd: path): Promise<path> {
     // Extracted tarball is not wrapped by a single root directory. The entire `pkgPath` must be considered as package root
     // pkgPath is the same
     entries = entries.filter((e) =>
-      fs.statSync(nodePath.join(pkgPath, e)).isDirectory()
+      fs.statSync(nodePath.join(pkgPath, e)).isDirectory(),
     );
     pkgPath = Node.path.join(pkgPath, entries[0]);
   } else if (entries.length === 1) {

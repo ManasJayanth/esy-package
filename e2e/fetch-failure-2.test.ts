@@ -18,7 +18,7 @@ beforeAll(() => {
   testProjectPath = commonSetup(testProjectDir);
   Node.fs.copyFileSync(
     Node.path.join(__dirname, testManifestFilename),
-    Node.path.join(testProjectPath, "esy.json")
+    Node.path.join(testProjectPath, "esy.json"),
   );
 });
 

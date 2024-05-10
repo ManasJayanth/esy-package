@@ -18,7 +18,7 @@ export async function resolveCmd(platform, cmd) {
 
   let possibleFilePaths = paths.reduce((acc, p) => {
     return acc.concat(
-      possibleCmdExtensions.map((ext) => path.join(p, `${cmd}${ext}`))
+      possibleCmdExtensions.map((ext) => path.join(p, `${cmd}${ext}`)),
     );
   }, []);
 

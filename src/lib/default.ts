@@ -21,7 +21,7 @@ export async function defaultCommand(
   pack: string,
   cwd: path,
   storagePath: path = Defaults.storagePath,
-  prefixPath: path = null
+  prefixPath: path = null,
 ) {
   let manifest = require(Path.join(cwd, "esy.json"));
   let returnStatus: number;
@@ -36,7 +36,7 @@ export async function defaultCommand(
     "/unnecessary-path.yml",
     storagePath,
     REGISTRY_ADDR,
-    REGISTRY_PORT
+    REGISTRY_PORT,
   );
   await NpmServer.start(server);
   Log.info("Setting up verdaccio user session");
@@ -57,7 +57,7 @@ export async function defaultCommand(
     let tarballPath = `${cwd}/package.tar.gz`;
     Log.process(
       "verdaccio",
-      await NpmClient.publish(REGISTRY_URL, tarballPath)
+      await NpmClient.publish(REGISTRY_URL, tarballPath),
     );
     Log.info("Running test project");
     let testProjectPath = Path.join(Os.tmpdir(), "esy-test");
@@ -69,7 +69,7 @@ export async function defaultCommand(
       Log.info("Running esy install");
       Log.process(
         "esy-install",
-        await esyi({ cwd: testProjectPath, prefixPath })
+        await esyi({ cwd: testProjectPath, prefixPath }),
       );
       Log.info("Running esy");
       await esy({ cwd: testProjectPath, prefixPath });
@@ -78,7 +78,7 @@ export async function defaultCommand(
         Log.info("Running esy install");
         Log.process(
           "esy-install",
-          await esyi({ cwd: testProjectPath, prefixPath })
+          await esyi({ cwd: testProjectPath, prefixPath }),
         );
         Log.info("Running esy");
         await esy({ cwd: testProjectPath, prefixPath });
