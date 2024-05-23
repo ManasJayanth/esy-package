@@ -59,22 +59,17 @@ export async function defaultCommand(
       "verdaccio",
       await NpmClient.publish(REGISTRY_URL, tarballPath),
     );
-    Log.info("Running test project");
-    let testProjectPath = Path.join(Os.tmpdir(), "esy-test");
-    Log.info("Clearing path meant for test project", testProjectPath);
-    rimraf.sync(testProjectPath);
-    fse.copySync("./esy-test", testProjectPath, { overwrite: true });
-    if (prefixPath) {
-      Log.info("User provided prefix path", prefixPath);
-      Log.info("Running esy install");
-      Log.process(
-        "esy-install",
-        await esyi({ cwd: testProjectPath, prefixPath }),
-      );
-      Log.info("Running esy");
-      await esy({ cwd: testProjectPath, prefixPath });
-    } else {
-      await withPrefixPath(async (prefixPath) => {
+    const packageRecipeTestsPath = Path.join(cwd, "esy-test");
+    if (fse.existsSync(packageRecipeTestsPath)) {
+      Log.info("Running test project");
+      let testProjectPath = Path.join(Os.tmpdir(), "esy-test");
+      Log.info("Clearing path meant for test project", testProjectPath);
+      rimraf.sync(testProjectPath);
+      fse.copySync(packageRecipeTestsPath, testProjectPath, {
+        overwrite: true,
+      });
+      if (prefixPath) {
+        Log.info("User provided prefix path", prefixPath);
         Log.info("Running esy install");
         Log.process(
           "esy-install",
@@ -82,7 +77,17 @@ export async function defaultCommand(
         );
         Log.info("Running esy");
         await esy({ cwd: testProjectPath, prefixPath });
-      });
+      } else {
+        await withPrefixPath(async (prefixPath) => {
+          Log.info("Running esy install");
+          Log.process(
+            "esy-install",
+            await esyi({ cwd: testProjectPath, prefixPath }),
+          );
+          Log.info("Running esy");
+          await esy({ cwd: testProjectPath, prefixPath });
+        });
+      }
     }
     returnStatus = 0;
   } catch (e) {
