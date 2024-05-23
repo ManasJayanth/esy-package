@@ -5,13 +5,14 @@ import * as os from "os";
 import * as cp from "child_process";
 import { uncompress } from "./compression";
 import * as crypto from "crypto";
+import { uname } from "./platform";
 import type { path as $path } from "../types";
 import type { UrlWithStringQuery } from "url";
 
-export function cygpath(path: string) {
+export async function cygpath(path: string) {
   let platform: string;
   try {
-    platform = cp.execSync("uname").toString().trim();
+    platform = await uname();
   } catch (e) {
     platform = "Windows";
   }
