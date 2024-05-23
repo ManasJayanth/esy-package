@@ -55,34 +55,14 @@ async function subcommand(
   });
 }
 
-export async function esy(opts: Opts): Promise<void> {
+export async function esy(opts: Opts): Promise<ProcessOutput> {
   let { cwd, prefixPath } = opts;
   let env = craftEnv(REGISTRY_URL, prefixPath);
-  return new Promise(function (resolve, reject) {
-    debug(cwd);
-    debug(env);
-    let execCmd = "esy" + (process.platform === "win32" ? ".cmd" : "");
-    debug(`Running cmd: ${execCmd}`);
-    // TODO santise subcommand
-    let esy = cp.spawn(execCmd, [], {
-      cwd,
-      env,
-      stdio: "pipe",
-    });
-    esy.stdout.on("data", (c) => {
-      Log.info("esy:stdout", c.toString());
-    });
-    esy.stderr.on("data", (c) => {
-      Log.info("esy:stderr", c.toString());
-    });
-    esy.on("close", (exitCode) => {
-      if (exitCode !== 0) {
-        reject(new Error("esy returned non-zero exit code"));
-      } else {
-        resolve();
-      }
-    });
-  });
+  debug(cwd);
+  debug(env);
+  let execCmd = "esy"; // + (process.platform === "win32" ? ".cmd" : "");
+  debug(`Running cmd: ${execCmd}`);
+  return subcommand("", cwd, prefixPath);
 }
 
 export async function esyi(opts: Opts): Promise<ProcessOutput> {
