@@ -4,6 +4,7 @@
   "description": "",
   "bin": "./bale",
   "scripts": {
+    "fmt": "prettier --write .",
     "start": "tsc -w",
     "test": "jest",
     "build": "tsc"
