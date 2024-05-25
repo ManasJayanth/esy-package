@@ -43,4 +43,5 @@ jobs:
         run: |
           git clone https://github.com/esy-packages/template.git
           cd template
-          env DEBUG=bale* ${GITHUB_WORKSPACE}/bale
+          export DEBUG=bale*
+          ${GITHUB_WORKSPACE}/bale
