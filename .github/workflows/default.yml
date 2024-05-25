@@ -41,6 +41,6 @@ jobs:
       - name: Test on esy-packages/template
         shell: bash
         run: |
-          git clone git@github.com:esy-packages/template.git
+          git clone https://github.com/esy-packages/template.git
           cd template
           ${GITHUB_WORKSPACE}/bale
