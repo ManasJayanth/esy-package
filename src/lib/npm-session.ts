@@ -12,10 +12,10 @@ async function handleLoginOrAdduser(
 ): Promise<token> {
   let { ok, token, username: userNameFromResponse } = npmResponse;
   if (
-    ok !== `you are authenticated as '${userNameFromResponse}'` &&
-    typeof token === "string" &&
-    token !== "" &&
-    username === userNameFromResponse
+    (ok !== `you are authenticated as '${userNameFromResponse}'` &&
+      ok !== `user '${userNameFromResponse}' created`) ||
+    token === "" ||
+    username !== userNameFromResponse
   ) {
     throw new Error(
       "Login failed because registry server sent unrecogised response " +

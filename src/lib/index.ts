@@ -4,6 +4,7 @@ import * as path from "path";
 import * as os from "os";
 import * as url from "url";
 import * as fs from "fs";
+import * as crypto from "crypto";
 import { mkdirpSync, fetch, copy } from "./utils";
 import * as Npm from "./npm-session";
 import * as NpmClient from "./npm-client";
@@ -26,13 +27,14 @@ export * from "./npm-session";
 
 export async function createSession(): Promise<string> {
   let token: string;
-  let testUsername = "foo"; // TODO centralise this
+  let testUsername = "foo-" + crypto.randomBytes(4).toString("hex"); // TODO centralise this
   let testEmail = "foo@bar.com"; // TODO centralise this
   let testPassword = "bar"; // TODO centralise this
   try {
     debug("Attempting npm login");
     token = await Npm.login(testUsername, testPassword);
-  } catch (_) {
+  } catch (e) {
+    console.log(e);
     debug("NPM login failed. Attempting adduser");
     token = await Npm.addUser(testUsername, testEmail, testPassword);
   }
