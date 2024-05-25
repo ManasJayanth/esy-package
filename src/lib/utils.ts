@@ -209,7 +209,7 @@ export async function download(urlStrWithChecksum: $path, pkgPath: $path) {
     await fetchWithChecksumCmp(urlStr, downloadedPath, algo, hashStr);
   }
 
-  uncompress(downloadedPath, pkgPath);
+  await uncompress(downloadedPath, pkgPath);
 
   return downloadedPath;
 }
