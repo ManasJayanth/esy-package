@@ -41,6 +41,7 @@ jobs:
       - name: Test on esy-packages/template
         shell: bash
         run: |
+          npm i -g esy
           git clone https://github.com/esy-packages/template.git
           cd template
           export DEBUG=bale*
