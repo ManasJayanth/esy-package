@@ -1,27 +1,31 @@
 import * as cp from "child_process";
 import * as path from "path";
-import { pathNormalise, cygpath } from "./utils";
-import * as tar from "tar";
+import { cygpath } from "./utils";
 
-export function unzip(filePath, destDir) {
-  return Promise.resolve(cp.execSync(`unzip -o ${filePath} -d ${destDir}`));
+export async function tar(filePath, destDir, gzip?) {
+  filePath = await cygpath(filePath);
+  destDir = await cygpath(destDir);
+  cp.execSync(`tar -x${gzip ? "z" : ""}f ${filePath} -C ${destDir}`, {
+    stdio: "inherit",
+  });
+}
+
+export async function unzip(filePath, destDir) {
+  cp.execSync(`unzip -o ${filePath} -d ${destDir}`);
 }
 
 export async function uncompress(pathStr, pkgPath) {
-  pathStr = await cygpath(pathStr);
-  pkgPath = await cygpath(pkgPath);
-  const filePath = pathNormalise(pathStr);
-  const destDir = pathNormalise(pkgPath);
   switch (path.extname(pathStr)) {
     case ".tgz":
     case ".gz":
-      return tar.x({ f: filePath, C: destDir, z: true });
+      tar(pathStr, pkgPath, true);
+      break;
     case ".bz2":
     case ".xz":
-      return tar.x({ f: filePath, C: destDir });
+      tar(pathStr, pkgPath);
       break;
     case ".zip":
-      return unzip(pathStr, pkgPath);
+      unzip(pathStr, pkgPath);
       break;
   }
 }
