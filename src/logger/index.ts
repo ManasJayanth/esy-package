@@ -5,6 +5,10 @@ export const info = Debug("bale:info");
 export const debug = Debug("bale:debug");
 export const error = Debug("bale:error");
 
+Debug.enable(
+  ["bale:info,bale:error", global.process.env?.DEBUG || ""].join(","),
+);
+
 export function process(marker: string, output: ProcessOutput): void {
   const debugO = Debug(`bale:${marker}:stdout`);
   const debugE = Debug(`bale:${marker}:stderr`);
