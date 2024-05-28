@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import * as commandDefs from "../lib/commands";
+import { defaultCommand, pkg, fetch } from "../lib";
 
 const version = require("../../package.json").version;
 
@@ -37,9 +37,9 @@ program
       storagePath,
       prefixPath,
     } = program.opts();
-    await commandDefs
-      .defaultCommand(pack, cwd, storagePath, prefixPath)
-      .catch(globalErrorHandler);
+    await defaultCommand(pack, cwd, storagePath, prefixPath).catch(
+      globalErrorHandler,
+    );
   });
 
 program
@@ -49,7 +49,7 @@ program
   )
   .action(async () => {
     const { cwd = process.cwd() } = program.opts();
-    await commandDefs.pkg(cwd).catch(globalErrorHandler);
+    await pkg(cwd).catch(globalErrorHandler);
   });
 
 program
@@ -60,7 +60,7 @@ program
   )
   .action(async () => {
     const { cwd = process.cwd() } = program.opts();
-    await commandDefs.fetch(cwd).catch(globalErrorHandler);
+    await fetch(cwd).catch(globalErrorHandler);
   });
 
 program.parse(process.argv);

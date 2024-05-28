@@ -1,10 +1,5 @@
 import * as profile from "npm-profile";
 import type { email, token, loginResponse, addUserResponse } from "../types";
-import { REGISTRY_URL } from "../config";
-
-let localRegistryOpts = {
-  registry: REGISTRY_URL,
-};
 
 async function handleLoginOrAdduser(
   username: string,
@@ -29,7 +24,11 @@ async function handleLoginOrAdduser(
 export async function login(
   username: string,
   password: string,
+  registryUrl: string,
 ): Promise<token> {
+  let localRegistryOpts = {
+    registry: registryUrl,
+  };
   let npmResponse = await profile.loginCouch(
     username,
     password,
@@ -42,7 +41,11 @@ export async function addUser(
   username: string,
   email: email,
   password: string,
+  registryUrl: string,
 ): Promise<token> {
+  let localRegistryOpts = {
+    registry: registryUrl,
+  };
   let npmResponse = await profile.adduserCouch(
     username,
     email,
