@@ -174,3 +174,62 @@ export async function defaultCommand(
   }
   process.exit(returnStatus);
 }
+
+async function e2eShell(
+  packageRecipeTestsPath: path,
+  userSpecifiedPrefixPath: path,
+  registryUrl: url,
+): Promise<void> {
+  return new Promise((resolve) => {
+    let testProjectPath = Path.join(Os.tmpdir(), "esy-test");
+    Log.info("Clearing path meant for test project", testProjectPath);
+    rimraf.sync(testProjectPath);
+    fse.copySync(packageRecipeTestsPath, testProjectPath, {
+      overwrite: true,
+    });
+    const prefixPath = userSpecifiedPrefixPath ?? setupTemporaryEsyPrefix();
+    Log.info("Dropping into a shell to debug");
+    const bash = cp.spawn("/bin/bash", [], {
+      stdio: "inherit",
+      env: {
+        ...process.env,
+        NPM_CONFIG_REGISTRY: registryUrl,
+        ESY__PREFIX: prefixPath,
+      },
+      cwd: testProjectPath,
+    });
+    bash.on("close", resolve);
+  });
+}
+
+export async function shellCommand(
+  pack: string,
+  cwd: path,
+  storagePath: path = Defaults.storagePath,
+  userSpecifiedPrefixPath: path = null,
+) {
+  let returnStatus: number;
+  let server: any;
+  try {
+    Log.info("Setting up separate testing area on temporary directory");
+    const packageRecipeTestsPath = Path.join(cwd, "esy-test");
+    if (fse.existsSync(packageRecipeTestsPath)) {
+      // TODO see note in defaultCommand
+      const server = await getLocalVerdaccioWithPackage(pack, cwd, storagePath);
+      const registryUrl = NpmServer.getUrl(server);
+      await e2eShell(
+        packageRecipeTestsPath,
+        userSpecifiedPrefixPath,
+        registryUrl,
+      );
+    }
+    returnStatus = 0;
+  } catch (e) {
+    Log.error(e.message);
+    Log.error(e.stack);
+    returnStatus = -1;
+  } finally {
+    cleanup(server);
+  }
+  process.exit(returnStatus);
+}

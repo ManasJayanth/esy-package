@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { defaultCommand, pkg, fetch } from "../lib";
+import { defaultCommand, shellCommand, pkg, fetch } from "../lib";
 
 const version = require("../../package.json").version;
 
@@ -61,6 +61,36 @@ program
   .action(async () => {
     const { cwd = process.cwd() } = program.opts();
     await fetch(cwd).catch(globalErrorHandler);
+  });
+
+program
+  .command("shell")
+  .option("-C, --cwd [cwd]", "Set current working directory")
+  .description(
+    "Given an esy.json manifest, and an test folder containing test project using the package, it drops you into a shell to debug the package build",
+  )
+  .option(
+    "-i, --prefix-path [path]",
+    "Path that esy can use for cache area as it runs the tests",
+  )
+  .option(
+    "-s, --storage-path [path]",
+    "Path that verdaccio can use for storage as it runs the tests",
+  )
+  .option(
+    "-p, --pack [packingCommands]",
+    "Specify sequence of commands, separated by &&, to package for NPM",
+  )
+  .action(async () => {
+    const {
+      pack,
+      cwd = process.cwd(),
+      storagePath,
+      prefixPath,
+    } = program.opts();
+    await shellCommand(pack, cwd, storagePath, prefixPath).catch(
+      globalErrorHandler,
+    );
   });
 
 program.parse(process.argv);
