@@ -4,10 +4,11 @@ import type { url, path, ProcessOutput } from "../types";
 export async function publish(
   registryUrl: url,
   tarballPath: path,
+  userconfig: path,
 ): Promise<ProcessOutput> {
   return new Promise(function (resolve, reject) {
     cp.exec(
-      `npm publish --registry ${registryUrl} ${tarballPath}`,
+      `npm publish --userconfig ${userconfig} --registry ${registryUrl} ${tarballPath}`,
       { maxBuffer: 5000 * 1024 },
       (error: Error, stdout, stderr) => {
         if (error) {
