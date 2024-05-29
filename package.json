@@ -1,6 +1,6 @@
 {
   "name": "esy-package",
-  "version": "0.1.0-dev.27",
+  "version": "0.1.0-dev.58",
   "description": "",
   "bin": "./bale",
   "scripts": {
