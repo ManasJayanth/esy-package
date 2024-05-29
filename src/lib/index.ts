@@ -30,7 +30,6 @@ export async function createSession(
   let testUsername = "foo-" + crypto.randomBytes(4).toString("hex"); // TODO centralise this
   let testEmail = "foo@bar.com"; // TODO centralise this
   let testPassword = "bar"; // TODO centralise this
-  let { addr, port } = server;
   const registryUrl = NpmServer.getUrl(server);
   try {
     debug("Attempting npm login");
@@ -45,8 +44,6 @@ export async function createSession(
       registryUrl,
     );
   }
-  // Writing to .npmrc by hand. See docs/notes.org to see why
-  fs.appendFileSync(localNpmRc, `//${addr}:${port}/:_authToken="${token}"\n`);
   return token;
 }
 
@@ -109,11 +106,22 @@ async function setupLocalVerdaccio(
   return NpmServer.setup(storagePath, manifest, registryLogLevel);
 }
 
-async function publishToLocalVerdaccio(server: any, tarballPath: path) {
+async function publishToLocalVerdaccio(
+  server: any,
+  tarballPath: path,
+  cwd: path,
+) {
   Log.info("Publishing to verdaccio server");
   const registryUrl = NpmServer.getUrl(server);
-  await createSession(server);
-  Log.process("verdaccio", await NpmClient.publish(registryUrl, tarballPath));
+  const token = await createSession(server);
+  // Writing to .npmrc by hand. See docs/notes.org to see why
+  const tokenFile = Path.join(cwd, "_esy-package", ".npmrc");
+  const { addr, port } = server;
+  fs.appendFileSync(tokenFile, `//${addr}:${port}/:_authToken="${token}"\n`);
+  Log.process(
+    "verdaccio",
+    await NpmClient.publish(registryUrl, tarballPath, tokenFile),
+  );
 }
 
 async function getLocalVerdaccioWithPackage(
@@ -129,7 +137,7 @@ async function getLocalVerdaccioWithPackage(
     manifest,
     registryLogLevel,
   );
-  await publishToLocalVerdaccio(server, tarballPath);
+  await publishToLocalVerdaccio(server, tarballPath, cwd);
   return server;
 }
 
