@@ -217,7 +217,20 @@ async function e2eShell(
     });
     const prefixPath = userSpecifiedPrefixPath ?? setupTemporaryEsyPrefix();
     Log.info("Dropping into a shell to debug");
-    const bash = cp.spawn("/bin/bash", [], {
+    // We earlier used /bin/bash On Windows it's advisable to simply use
+    // bash because Windows has two environments. Cygwin and Native Shells
+    // (cmd and powershell)
+    // When in cygwin, if one spawns /bin/bash, it still won't work
+    // unless the node.js was linked with cygwin.dll, ie. a C-Runtime that
+    // understand cygwin paths.
+    // With Powershell and cmd, /bin/bash wont work for obvious reasons
+    // It's also important to disable shell with spawn, otherwise Node.js
+    // will launch an extra shell process to run our shell inside it
+    // But since we dont implement our own path resolution of the command,
+    // with $PATH, spawn wont work reliably with just command names.
+    // (Eg. esy.cmd ENOENT)
+    // Also, using pwsh puts a hard dependency on the new Powershell 7
+    const bash = cp.spawn(process.platform === "win32" ? "pwsh" : "bash", [], {
       stdio: "inherit",
       env: {
         ...process.env,
