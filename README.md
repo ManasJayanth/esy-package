@@ -2,7 +2,9 @@
 
 A tool to make it easier to package C libraries and tools for [esy](esy.sh)
 
-Note: On Windows, it works only within mingw/cygwin environment since esy provides this environment anyway.
+Note: On Windows, it works only within mingw/GitBash environment (but not cygwin) since esy provides this environment anyway.
+
+Needs Powershell 7
 
 ## Development
 
