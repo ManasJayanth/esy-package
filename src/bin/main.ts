@@ -19,6 +19,10 @@ program.version(version);
 program
   .option("-C, --cwd [cwd]", "Set current working directory")
   .option(
+    "-r, --registry-log-level [level]",
+    "To configure log level from test verdaccio server. Ref: https://verdaccio.org/docs/logger/#configuration",
+  )
+  .option(
     "-i, --prefix-path [path]",
     "Path that esy can use for cache area as it runs the tests",
   )
@@ -36,10 +40,15 @@ program
       cwd = process.cwd(),
       storagePath,
       prefixPath,
+      registryLogLevel,
     } = program.opts();
-    await defaultCommand(pack, cwd, storagePath, prefixPath).catch(
-      globalErrorHandler,
-    );
+    await defaultCommand(
+      pack,
+      cwd,
+      storagePath,
+      prefixPath,
+      registryLogLevel,
+    ).catch(globalErrorHandler);
   });
 
 program
@@ -65,6 +74,10 @@ program
 
 program
   .command("shell")
+  .option(
+    "-r, --registry-log-level",
+    "Flag to turn on logs from test verdaccio server",
+  )
   .option("-C, --cwd [cwd]", "Set current working directory")
   .description(
     "Given an esy.json manifest, and an test folder containing test project using the package, it drops you into a shell to debug the package build",
@@ -87,10 +100,15 @@ program
       cwd = process.cwd(),
       storagePath,
       prefixPath,
+      registryLogLevel,
     } = program.opts();
-    await shellCommand(pack, cwd, storagePath, prefixPath).catch(
-      globalErrorHandler,
-    );
+    await shellCommand(
+      pack,
+      cwd,
+      storagePath,
+      prefixPath,
+      registryLogLevel,
+    ).catch(globalErrorHandler);
   });
 
 program.parse(process.argv);

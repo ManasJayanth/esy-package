@@ -1,5 +1,4 @@
 import * as cp from "child_process";
-import Debug from "debug";
 import * as fs from "fs";
 import * as crypto from "crypto";
 import * as Npm from "./npm-session";
@@ -15,7 +14,7 @@ import { pkg } from "./package";
 import * as Defaults from "./defaults";
 import { esy, esyi, withPrefixPath, setupTemporaryEsyPrefix } from "./esy";
 
-const debug = Debug("bale:lib:info");
+const debug = require("debug")("bale:lib:info");
 export let localNpmRc = `${
   process.platform === "win32" ? process.env.USERPROFILE : process.env.HOME
 }/.npmrc`;
@@ -24,11 +23,15 @@ export * from "./npm-session";
 export * from "./package";
 export * from "./fetch";
 
-export async function createSession(registryUrl: string): Promise<string> {
+export async function createSession(
+  server: NpmServer.$Server,
+): Promise<string> {
   let token: string;
   let testUsername = "foo-" + crypto.randomBytes(4).toString("hex"); // TODO centralise this
   let testEmail = "foo@bar.com"; // TODO centralise this
   let testPassword = "bar"; // TODO centralise this
+  let { addr, port } = server;
+  const registryUrl = NpmServer.getUrl(server);
   try {
     debug("Attempting npm login");
     token = await Npm.login(testUsername, testPassword, registryUrl);
@@ -43,7 +46,7 @@ export async function createSession(registryUrl: string): Promise<string> {
     );
   }
   // Writing to .npmrc by hand. See docs/notes.org to see why
-  fs.appendFileSync(localNpmRc, `//${registryUrl}/:_authToken="${token}"\n`);
+  fs.appendFileSync(localNpmRc, `//${addr}:${port}/:_authToken="${token}"\n`);
   return token;
 }
 
@@ -97,14 +100,19 @@ async function fetchAndPkg(pack: string, cwd: path) {
   return `${cwd}/package.tar.gz`;
 }
 
-async function setupLocalVerdaccio(storagePath: path, manifest: any) {
+async function setupLocalVerdaccio(
+  storagePath: path,
+  manifest: any,
+  registryLogLevel: string,
+) {
   Log.info("Setting up local verdaccio server");
-  return NpmServer.setup(storagePath, manifest);
+  return NpmServer.setup(storagePath, manifest, registryLogLevel);
 }
 
-async function publishToLocalVerdaccio(registryUrl: url, tarballPath: path) {
+async function publishToLocalVerdaccio(server: any, tarballPath: path) {
   Log.info("Publishing to verdaccio server");
-  await createSession(registryUrl);
+  const registryUrl = NpmServer.getUrl(server);
+  await createSession(server);
   Log.process("verdaccio", await NpmClient.publish(registryUrl, tarballPath));
 }
 
@@ -112,12 +120,16 @@ async function getLocalVerdaccioWithPackage(
   pack: string, // TODO make it optional
   cwd: path,
   storagePath: path,
+  registryLogLevel: string,
 ): Promise<NpmServer.$Server> {
   const manifest = require(Path.join(cwd, "esy.json"));
   const tarballPath = await fetchAndPkg(pack, cwd);
-  const server = await setupLocalVerdaccio(storagePath, manifest);
-  const registryUrl = NpmServer.getUrl(server);
-  await publishToLocalVerdaccio(registryUrl, tarballPath);
+  const server = await setupLocalVerdaccio(
+    storagePath,
+    manifest,
+    registryLogLevel,
+  );
+  await publishToLocalVerdaccio(server, tarballPath);
   return server;
 }
 
@@ -125,9 +137,15 @@ async function withPackagePublishedToLocalTestEnv(
   pack: string, // TODO make it optional
   cwd: path,
   storagePath: path,
+  registryLogLevel: string,
   f: (server: NpmServer.$Server) => Promise<void>,
 ): Promise<void> {
-  const server = await getLocalVerdaccioWithPackage(pack, cwd, storagePath);
+  const server = await getLocalVerdaccioWithPackage(
+    pack,
+    cwd,
+    storagePath,
+    registryLogLevel,
+  );
   await f(server);
   cleanup(server);
 }
@@ -137,6 +155,7 @@ export async function defaultCommand(
   cwd: path,
   storagePath: path = Defaults.storagePath,
   userSpecifiedPrefixPath: path = null,
+  registryLogLevel: string,
 ) {
   let returnStatus: number;
   let server: any;
@@ -154,6 +173,7 @@ export async function defaultCommand(
         pack,
         cwd,
         storagePath,
+        registryLogLevel,
         async (server: NpmServer.$Server) => {
           const registryUrl = NpmServer.getUrl(server);
           await runE2E(
@@ -207,6 +227,7 @@ export async function shellCommand(
   cwd: path,
   storagePath: path = Defaults.storagePath,
   userSpecifiedPrefixPath: path = null,
+  registryLogLevel: string,
 ) {
   let returnStatus: number;
   let server: any;
@@ -215,7 +236,12 @@ export async function shellCommand(
     const packageRecipeTestsPath = Path.join(cwd, "esy-test");
     if (fse.existsSync(packageRecipeTestsPath)) {
       // TODO see note in defaultCommand
-      const server = await getLocalVerdaccioWithPackage(pack, cwd, storagePath);
+      const server = await getLocalVerdaccioWithPackage(
+        pack,
+        cwd,
+        storagePath,
+        registryLogLevel,
+      );
       const registryUrl = NpmServer.getUrl(server);
       await e2eShell(
         packageRecipeTestsPath,

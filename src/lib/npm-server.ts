@@ -5,6 +5,7 @@ import { runServer } from "verdaccio";
 import { REGISTRY_PORT } from "../config";
 import Debug from "debug";
 import fse from "fs-extra";
+import { delay } from "./utils";
 
 export let REGISTRY_ADDR = "localhost";
 const debug = Debug("bale:npm-server:info");
@@ -16,7 +17,10 @@ async function init(
   storagePath: path,
   addr: string,
   port: number,
+  registryLogLevel: string,
 ): Promise<$Server> {
+  debug("Storage Path", storagePath);
+  debug("Log Level", registryLogLevel);
   let config = {
     storage: storagePath,
     self_path: configPath,
@@ -24,7 +28,7 @@ async function init(
     auth: {
       htpasswd: { file: Path.join(__dirname, "htpasswd") },
     },
-    logs: { type: "stdout", format: "json", level: "http" },
+    logs: { type: "stdout", level: registryLogLevel || "error" },
     uplinks: {
       npmjs: {
         url: "https://registry.npmjs.org/",
@@ -63,10 +67,6 @@ export function getUrl({ port, addr }) {
   return `http://${registryHost}`;
 }
 
-function delay(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 export function start(args: any): Promise<void> {
   let { port, addr, server } = args;
   return new Promise((resolve, reject) => {
@@ -82,7 +82,11 @@ export function stop(args) {
   server.close();
 }
 
-export async function setup(storagePath: path, manifest: any) {
+export async function setup(
+  storagePath: path,
+  manifest: any,
+  registryLogLevel: string,
+) {
   debug("Clearing storage path meant for verdaccio", storagePath);
   rimraf.sync(storagePath);
   fse.mkdirp(storagePath);
@@ -93,6 +97,7 @@ export async function setup(storagePath: path, manifest: any) {
     storagePath,
     REGISTRY_ADDR,
     REGISTRY_PORT,
+    registryLogLevel,
   );
   debug("Setting up verdaccio user session");
   await start(server);
