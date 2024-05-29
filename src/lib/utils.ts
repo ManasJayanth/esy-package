@@ -213,3 +213,7 @@ export async function download(urlStrWithChecksum: $path, pkgPath: $path) {
 
   return downloadedPath;
 }
+
+export function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}

@@ -1,14 +1,26 @@
 import type { path } from "../types";
+import * as rimraf from "rimraf";
 import Path from "path";
 import { runServer } from "verdaccio";
+import { REGISTRY_PORT } from "../config";
+import Debug from "debug";
+import fse from "fs-extra";
+import { delay } from "./utils";
 
-export async function init(
+export let REGISTRY_ADDR = "localhost";
+const debug = Debug("bale:npm-server:info");
+export type $Server = { port: number; addr: string; server: any };
+
+async function init(
   testPackageName: string,
   configPath: path,
   storagePath: path,
   addr: string,
   port: number,
-) {
+  registryLogLevel: string,
+): Promise<$Server> {
+  debug("Storage Path", storagePath);
+  debug("Log Level", registryLogLevel);
   let config = {
     storage: storagePath,
     self_path: configPath,
@@ -16,7 +28,7 @@ export async function init(
     auth: {
       htpasswd: { file: Path.join(__dirname, "htpasswd") },
     },
-    logs: { type: "stdout", format: "json", level: "http" },
+    logs: { type: "stdout", level: registryLogLevel || "error" },
     uplinks: {
       npmjs: {
         url: "https://registry.npmjs.org/",
@@ -50,8 +62,9 @@ export async function init(
   return { port, addr, server };
 }
 
-function delay(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+export function getUrl({ port, addr }) {
+  const registryHost = `${addr}:${port}`;
+  return `http://${registryHost}`;
 }
 
 export function start(args: any): Promise<void> {
@@ -67,4 +80,26 @@ export function start(args: any): Promise<void> {
 export function stop(args) {
   let { server } = args;
   server.close();
+}
+
+export async function setup(
+  storagePath: path,
+  manifest: any,
+  registryLogLevel: string,
+) {
+  debug("Clearing storage path meant for verdaccio", storagePath);
+  rimraf.sync(storagePath);
+  fse.mkdirp(storagePath);
+  debug("Initialising verdaccio server");
+  const server: any = await init(
+    manifest.name,
+    "/unnecessary-path.yml",
+    storagePath,
+    REGISTRY_ADDR,
+    REGISTRY_PORT,
+    registryLogLevel,
+  );
+  debug("Setting up verdaccio user session");
+  await start(server);
+  return server;
 }

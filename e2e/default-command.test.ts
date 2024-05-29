@@ -65,7 +65,8 @@ test("End-to-end: success case: fetch sources for a valid manifest", () => {
       Node.path.join("_esy-package", "test-hello-c-0.1.0"),
     );
   } catch (e) {
-    console.log(e);
+    console.log(e.stdout.toString());
+    console.log(e.stderr.toString());
     throw e;
   }
 });
