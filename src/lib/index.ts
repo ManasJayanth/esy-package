@@ -12,6 +12,7 @@ import * as rimraf from "rimraf";
 import * as Log from "../logger";
 import { pkg } from "./package";
 import * as Defaults from "./defaults";
+import * as Utils from "./utils";
 import { esy, esyi, withPrefixPath, setupTemporaryEsyPrefix } from "./esy";
 
 const debug = require("debug")("bale:lib:info");
@@ -279,4 +280,91 @@ export async function shellCommand(
     cleanup(server);
   }
   process.exit(returnStatus);
+}
+
+export async function generate(cwd: path, pkg: string): Promise<void> {
+  const seen = new Map();
+  let queue = [pkg];
+  while (queue.length) {
+    const pkg = queue.shift();
+    seen.set(pkg, true);
+    if (/^python/.test(pkg)) {
+      continue;
+    }
+    Log.info("Generating recipe for %s", pkg);
+    const generatedManifestName = `${pkg}.json`;
+    const generatedManifestPath = Path.join(
+      cwd,
+      "esy-dependencies",
+      pkg,
+      "esy.json",
+    );
+    let npmMetaData;
+    try {
+      npmMetaData = cp
+        .execSync(`npm info esy-${pkg}`, { stdio: [null, "pipe", null] })
+        .toString()
+        .trim();
+    } catch {}
+    if (!npmMetaData) {
+      const brewFormulaPath = cp
+        .execSync(`brew edit ${pkg} --print-path`, {
+          stdio: [null, "pipe", null],
+        })
+        .toString()
+        .trim();
+      const etcPath = (file) =>
+        Path.join(Path.resolve(__dirname, "..", "..", "etc"), file);
+      const etc = {
+        language: etcPath("language.rb"),
+        print: etcPath("print.rb"),
+        formulaBaseClass: etcPath("formula.rb"),
+      };
+      fs.writeFileSync(
+        "run.rb",
+        `
+require "${etc.language}" 
+require "${etc.formulaBaseClass}" 
+require "${brewFormulaPath}"
+require "${etc.print}"
+
+name = "esy-${pkg}"
+version = "0.1.0"
+pkg = ${pkg
+          .split("-")
+          .map(Utils.capitalizeFirstLetter)
+          .join("")
+          .replace("@", "AT")
+          .replace(".", "")}.new
+pkg.install
+print_json(name, version, pkg)
+`,
+      );
+      try {
+        const jsonStr = cp
+          .execSync(`ruby run.rb`, { stdio: [null, "pipe", null] })
+          .toString()
+          .trim();
+
+        const json = JSON.parse(jsonStr);
+        fs.mkdirSync(Path.dirname(generatedManifestPath), { recursive: true });
+        fs.writeFileSync(generatedManifestPath, jsonStr);
+        Log.info("Created manifest at %o", generatedManifestPath);
+        queue = queue.concat(
+          (Object.keys(json.override.dependencies) || [])
+            .map((dep) =>
+              dep
+                .replace(/{[^}]+}/, "")
+                // .split("@")[0]
+                .replace("esy-", ""),
+            )
+            .filter((a) => a !== "")
+            .filter((pkg) => !seen.get(pkg)),
+        );
+      } catch (e) {
+        console.log(e.stdout?.toString());
+        console.log(e.stderr?.toString());
+      }
+    }
+  }
 }

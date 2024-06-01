@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { defaultCommand, shellCommand, pkg, fetch } from "../lib";
+import { defaultCommand, shellCommand, pkg, fetch, generate } from "../lib";
 
 const version = require("../../package.json").version;
 
@@ -108,6 +108,13 @@ commonOptions(program.command("shell"))
       prefixPath,
       registryLogLevel,
     ).catch(globalErrorHandler);
+  });
+
+commonOptions(program.command("generate"))
+  .arguments("<package>")
+  .action(async function (pkg) {
+    const { cwd = process.cwd() } = program.opts();
+    await generate(cwd, pkg);
   });
 
 program.parse(process.argv);

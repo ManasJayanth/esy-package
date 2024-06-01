@@ -229,3 +229,8 @@ export async function download(urlStrWithChecksum: $path, pkgPath: $path) {
 export function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+export function capitalizeFirstLetter(string: string): string {
+  // JS strings are immutable
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
