@@ -129,9 +129,9 @@ async function getLocalVerdaccioWithPackage(
   pack: string, // TODO make it optional
   cwd: path,
   storagePath: path,
+  manifest: any,
   registryLogLevel: string,
 ): Promise<NpmServer.$Server> {
-  const manifest = require(Path.join(cwd, "esy.json"));
   const tarballPath = await fetchAndPkg(pack, cwd);
   const server = await setupLocalVerdaccio(
     storagePath,
@@ -146,6 +146,7 @@ async function withPackagePublishedToLocalTestEnv(
   pack: string, // TODO make it optional
   cwd: path,
   storagePath: path,
+  manifest: any,
   registryLogLevel: string,
   f: (server: NpmServer.$Server) => Promise<void>,
 ): Promise<void> {
@@ -153,6 +154,7 @@ async function withPackagePublishedToLocalTestEnv(
     pack,
     cwd,
     storagePath,
+    manifest,
     registryLogLevel,
   );
   await f(server);
@@ -168,22 +170,53 @@ export async function defaultCommand(
 ) {
   let returnStatus: number;
   let server: any;
+  const manifest = require(Path.join(cwd, "esy.json"));
   try {
     Log.info("Setting up separate testing area on temporary directory");
     const packageRecipeTestsPath = Path.join(cwd, "esy-test");
     if (fse.existsSync(packageRecipeTestsPath)) {
-      // TODO If the package recipe author doesn't provide a test
-      // create a simple test by placing a esy.json with the package
-      // as dependency
-      // {
-      //    "dependencies": "pkg"
-      // }
       await withPackagePublishedToLocalTestEnv(
         pack,
         cwd,
         storagePath,
+        manifest,
         registryLogLevel,
         async (server: NpmServer.$Server) => {
+          const registryUrl = NpmServer.getUrl(server);
+          await runE2E(
+            packageRecipeTestsPath,
+            userSpecifiedPrefixPath,
+            registryUrl,
+          );
+        },
+      );
+    } else {
+      await withPackagePublishedToLocalTestEnv(
+        pack,
+        cwd,
+        storagePath,
+        manifest,
+        registryLogLevel,
+        async (server: NpmServer.$Server) => {
+          // If the package recipe author doesn't provide a test
+          // create a simple test by placing a esy.json with the package
+          // as dependency
+          // {
+          //    "dependencies": "pkg"
+          // }
+          const packageRecipeTestsPath = Path.join(
+            Os.tmpdir(),
+            "generated-esy-test",
+          );
+          fs.mkdirSync(packageRecipeTestsPath, { recursive: true });
+          fs.writeFileSync(
+            Path.join(packageRecipeTestsPath, "package.json"),
+            JSON.stringify(
+              { dependencies: { [manifest.name]: manifest.version } },
+              null,
+              2,
+            ),
+          );
           const registryUrl = NpmServer.getUrl(server);
           await runE2E(
             packageRecipeTestsPath,
@@ -255,6 +288,7 @@ export async function shellCommand(
   let server: any;
   try {
     Log.info("Setting up separate testing area on temporary directory");
+    const manifest = require(Path.join(cwd, "esy.json"));
     const packageRecipeTestsPath = Path.join(cwd, "esy-test");
     if (fse.existsSync(packageRecipeTestsPath)) {
       // TODO see note in defaultCommand
@@ -262,6 +296,7 @@ export async function shellCommand(
         pack,
         cwd,
         storagePath,
+        manifest,
         registryLogLevel,
       );
       const registryUrl = NpmServer.getUrl(server);
