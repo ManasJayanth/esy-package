@@ -61,7 +61,10 @@ export function copy(src, dest) {
   }
 }
 
-export function fetch(urlObj: UrlWithStringQuery, pathStr: string) {
+export function fetch(
+  urlObj: UrlWithStringQuery,
+  pathStr?: string,
+): Promise<string> {
   let httpm;
   switch (urlObj.protocol) {
     case "http:":
@@ -82,11 +85,20 @@ export function fetch(urlObj: UrlWithStringQuery, pathStr: string) {
           let urlStr = response.headers.location;
           fetch(url.parse(urlStr), pathStr).then(resolve).catch(reject);
         } else if (response.statusCode > 100 && response.statusCode < 300) {
-          response
-            .pipe(fs.createWriteStream(pathStr))
-            .on("finish", function () {
-              resolve(pathStr);
-            });
+          if (pathStr) {
+            response
+              .pipe(fs.createWriteStream(pathStr))
+              .on("finish", function () {
+                resolve(pathStr);
+              });
+          } else {
+            let buf = "";
+            response
+              .on("data", (c) => (buf += c))
+              .on("finish", function () {
+                resolve(buf);
+              });
+          }
         } else {
           reject(
             new Error(`Non 200 statusCode for url: ${url.format(urlObj)}`),
@@ -216,4 +228,9 @@ export async function download(urlStrWithChecksum: $path, pkgPath: $path) {
 
 export function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export function capitalizeFirstLetter(string: string): string {
+  // JS strings are immutable
+  return string.charAt(0).toUpperCase() + string.slice(1);
 }

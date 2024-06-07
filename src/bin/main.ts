@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { defaultCommand, shellCommand, pkg, fetch } from "../lib";
+import { defaultCommand, shellCommand, pkg, fetch, generate } from "../lib";
 
 const version = require("../../package.json").version;
 
@@ -12,12 +12,15 @@ function globalErrorHandler(e) {
   process.exit(-1);
 }
 
+function commonOptions(program: Command) {
+  return program.option("-C, --cwd [cwd]", "Set current working directory");
+}
+
 const program = new Command();
 
 program.version(version);
 
-program
-  .option("-C, --cwd [cwd]", "Set current working directory")
+commonOptions(program)
   .option(
     "-r, --registry-log-level [level]",
     "To configure log level from test verdaccio server. Ref: https://verdaccio.org/docs/logger/#configuration",
@@ -61,9 +64,7 @@ program
     await pkg(cwd).catch(globalErrorHandler);
   });
 
-program
-  .command("fetch")
-  .option("-C, --cwd [cwd]", "Set current working directory")
+commonOptions(program.command("fetch"))
   .description(
     "Given an esy.json manifest, it will fetch the archive (tar, zip etc), extract it, and echo the path where sources have been extracted",
   )
@@ -72,13 +73,11 @@ program
     await fetch(cwd).catch(globalErrorHandler);
   });
 
-program
-  .command("shell")
+commonOptions(program.command("shell"))
   .option(
     "-r, --registry-log-level",
     "Flag to turn on logs from test verdaccio server",
   )
-  .option("-C, --cwd [cwd]", "Set current working directory")
   .description(
     "Given an esy.json manifest, and an test folder containing test project using the package, it drops you into a shell to debug the package build",
   )
@@ -109,6 +108,13 @@ program
       prefixPath,
       registryLogLevel,
     ).catch(globalErrorHandler);
+  });
+
+commonOptions(program.command("generate"))
+  .arguments("<package>")
+  .action(async function (pkg) {
+    const { cwd = process.cwd() } = program.opts();
+    await generate(cwd, pkg);
   });
 
 program.parse(process.argv);

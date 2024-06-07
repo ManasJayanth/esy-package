@@ -12,6 +12,7 @@ import * as rimraf from "rimraf";
 import * as Log from "../logger";
 import { pkg } from "./package";
 import * as Defaults from "./defaults";
+import * as Utils from "./utils";
 import { esy, esyi, withPrefixPath, setupTemporaryEsyPrefix } from "./esy";
 
 const debug = require("debug")("bale:lib:info");
@@ -128,9 +129,9 @@ async function getLocalVerdaccioWithPackage(
   pack: string, // TODO make it optional
   cwd: path,
   storagePath: path,
+  manifest: any,
   registryLogLevel: string,
 ): Promise<NpmServer.$Server> {
-  const manifest = require(Path.join(cwd, "esy.json"));
   const tarballPath = await fetchAndPkg(pack, cwd);
   const server = await setupLocalVerdaccio(
     storagePath,
@@ -145,6 +146,7 @@ async function withPackagePublishedToLocalTestEnv(
   pack: string, // TODO make it optional
   cwd: path,
   storagePath: path,
+  manifest: any,
   registryLogLevel: string,
   f: (server: NpmServer.$Server) => Promise<void>,
 ): Promise<void> {
@@ -152,6 +154,7 @@ async function withPackagePublishedToLocalTestEnv(
     pack,
     cwd,
     storagePath,
+    manifest,
     registryLogLevel,
   );
   await f(server);
@@ -167,22 +170,53 @@ export async function defaultCommand(
 ) {
   let returnStatus: number;
   let server: any;
+  const manifest = require(Path.join(cwd, "esy.json"));
   try {
     Log.info("Setting up separate testing area on temporary directory");
     const packageRecipeTestsPath = Path.join(cwd, "esy-test");
     if (fse.existsSync(packageRecipeTestsPath)) {
-      // TODO If the package recipe author doesn't provide a test
-      // create a simple test by placing a esy.json with the package
-      // as dependency
-      // {
-      //    "dependencies": "pkg"
-      // }
       await withPackagePublishedToLocalTestEnv(
         pack,
         cwd,
         storagePath,
+        manifest,
         registryLogLevel,
         async (server: NpmServer.$Server) => {
+          const registryUrl = NpmServer.getUrl(server);
+          await runE2E(
+            packageRecipeTestsPath,
+            userSpecifiedPrefixPath,
+            registryUrl,
+          );
+        },
+      );
+    } else {
+      await withPackagePublishedToLocalTestEnv(
+        pack,
+        cwd,
+        storagePath,
+        manifest,
+        registryLogLevel,
+        async (server: NpmServer.$Server) => {
+          // If the package recipe author doesn't provide a test
+          // create a simple test by placing a esy.json with the package
+          // as dependency
+          // {
+          //    "dependencies": "pkg"
+          // }
+          const packageRecipeTestsPath = Path.join(
+            Os.tmpdir(),
+            "generated-esy-test",
+          );
+          fs.mkdirSync(packageRecipeTestsPath, { recursive: true });
+          fs.writeFileSync(
+            Path.join(packageRecipeTestsPath, "package.json"),
+            JSON.stringify(
+              { dependencies: { [manifest.name]: manifest.version } },
+              null,
+              2,
+            ),
+          );
           const registryUrl = NpmServer.getUrl(server);
           await runE2E(
             packageRecipeTestsPath,
@@ -254,6 +288,7 @@ export async function shellCommand(
   let server: any;
   try {
     Log.info("Setting up separate testing area on temporary directory");
+    const manifest = require(Path.join(cwd, "esy.json"));
     const packageRecipeTestsPath = Path.join(cwd, "esy-test");
     if (fse.existsSync(packageRecipeTestsPath)) {
       // TODO see note in defaultCommand
@@ -261,6 +296,7 @@ export async function shellCommand(
         pack,
         cwd,
         storagePath,
+        manifest,
         registryLogLevel,
       );
       const registryUrl = NpmServer.getUrl(server);
@@ -279,4 +315,91 @@ export async function shellCommand(
     cleanup(server);
   }
   process.exit(returnStatus);
+}
+
+export async function generate(cwd: path, pkg: string): Promise<void> {
+  const seen = new Map();
+  let queue = [pkg];
+  while (queue.length) {
+    const pkg = queue.shift();
+    seen.set(pkg, true);
+    if (/^python/.test(pkg)) {
+      continue;
+    }
+    Log.info("Generating recipe for %s", pkg);
+    const generatedManifestName = `${pkg}.json`;
+    const generatedManifestPath = Path.join(
+      cwd,
+      "esy-dependencies",
+      pkg,
+      "esy.json",
+    );
+    let npmMetaData;
+    try {
+      npmMetaData = cp
+        .execSync(`npm info esy-${pkg}`, { stdio: [null, "pipe", null] })
+        .toString()
+        .trim();
+    } catch {}
+    if (!npmMetaData) {
+      const brewFormulaPath = cp
+        .execSync(`brew edit ${pkg} --print-path`, {
+          stdio: [null, "pipe", null],
+        })
+        .toString()
+        .trim();
+      const etcPath = (file) =>
+        Path.join(Path.resolve(__dirname, "..", "..", "etc"), file);
+      const etc = {
+        language: etcPath("language.rb"),
+        print: etcPath("print.rb"),
+        formulaBaseClass: etcPath("formula.rb"),
+      };
+      fs.writeFileSync(
+        "run.rb",
+        `
+require "${etc.language}" 
+require "${etc.formulaBaseClass}" 
+require "${brewFormulaPath}"
+require "${etc.print}"
+
+name = "esy-${pkg}"
+version = "0.1.0"
+pkg = ${pkg
+          .split("-")
+          .map(Utils.capitalizeFirstLetter)
+          .join("")
+          .replace("@", "AT")
+          .replace(".", "")}.new
+pkg.install
+print_json(name, version, pkg)
+`,
+      );
+      try {
+        const jsonStr = cp
+          .execSync(`ruby run.rb`, { stdio: [null, "pipe", null] })
+          .toString()
+          .trim();
+
+        const json = JSON.parse(jsonStr);
+        fs.mkdirSync(Path.dirname(generatedManifestPath), { recursive: true });
+        fs.writeFileSync(generatedManifestPath, jsonStr);
+        Log.info("Created manifest at %o", generatedManifestPath);
+        queue = queue.concat(
+          (Object.keys(json.override.dependencies) || [])
+            .map((dep) =>
+              dep
+                .replace(/{[^}]+}/, "")
+                // .split("@")[0]
+                .replace("esy-", ""),
+            )
+            .filter((a) => a !== "")
+            .filter((pkg) => !seen.get(pkg)),
+        );
+      } catch (e) {
+        console.log(e.stdout?.toString());
+        console.log(e.stderr?.toString());
+      }
+    }
+  }
 }
