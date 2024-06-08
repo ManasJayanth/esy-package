@@ -14,10 +14,20 @@ export async function cygpath(path: string) {
   try {
     platform = await uname();
   } catch (e) {
-    platform = "Windows";
+    platform = "";
   }
 
-  if (/cygwin/i.test(platform) || /mingw/i.test(platform)) {
+  // uname : GitBash from Terminal returns
+  // MINGW64_NT-10.0-xxx DESKTOP-xxx 3.4.10-xxx.x86_64 2024-02-14 20:17 UTC x86_64 Msys
+
+  // uname: from child_process.spawn
+  // MSYS_NT-10.0-xxx DESKTOP-xxx 3.4.10-xxx.x86_64 2024-02-14 20:17 UTC x86_64 Msys
+
+  if (
+    /msys/i.test(platform) ||
+    /cygwin/i.test(platform) ||
+    /mingw/i.test(platform)
+  ) {
     path = cp.execSync(`cygpath -u ${path}`).toString().trim();
   }
 
