@@ -29,8 +29,11 @@
     "commander": "^8.3.0",
     "debug": "^4.3.2",
     "fs-extra": "^11.1.1",
+    "gunzip-maybe": "^1.4.2",
     "npm-profile": "^7.0.1",
+    "promisepipe": "^3.0.0",
     "rimraf": "^4.4.1",
+    "tar-fs": "^3.0.6",
     "verdaccio": "^5.23.1"
   }
 }
