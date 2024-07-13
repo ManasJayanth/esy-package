@@ -41,6 +41,7 @@ export async function uncompress(pathStr, pkgPath) {
     case ".gz":
       await tar(pathStr, pkgPath, true);
       break;
+    case ".tbz":
     case ".bz2":
     case ".xz":
       await tar(pathStr, pkgPath);
