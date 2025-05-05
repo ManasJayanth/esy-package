@@ -91,7 +91,7 @@ export function fetch(
   return new Promise(function (resolve, reject) {
     httpm
       .get(urlObj, function (response) {
-        if (response.statusCode == 302) {
+        if (response.statusCode == 302 || response.statusCode == 301) {
           let urlStr = response.headers.location;
           fetch(url.parse(urlStr), pathStr).then(resolve).catch(reject);
         } else if (response.statusCode > 100 && response.statusCode < 300) {
