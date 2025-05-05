@@ -111,6 +111,7 @@ class Formula
       @uses_from_macos = []
       @prefix = PlaceholderPath.new('#{self.install}')
       @buildpath = PlaceholderPath.new('#{self.target}')
+      @pkgshare = PlaceholderPath.new('#{self.share}')
       @share = PlaceholderPath.new('#{self.share}')
     end
   end
@@ -280,6 +281,10 @@ class Formula
   end
 
   def share
+    PlaceholderPath.new('#{self.share}')
+  end
+
+  def pkgshare
     PlaceholderPath.new('#{self.share}')
   end
 
