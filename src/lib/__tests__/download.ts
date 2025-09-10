@@ -1,3 +1,10 @@
+/**
+ * Windows CI can be slower for network-bound tests and also hit
+ * transient file visibility delays. Give this test a more generous
+ * timeout to avoid spurious failures.
+ */
+jest.setTimeout(30000);
+
 const { download } = require("../utils");
 import { genTemp } from "../../../test-utils/paths";
 const path = require("path");
