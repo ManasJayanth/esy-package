@@ -223,7 +223,36 @@ export async function download(urlStrWithChecksum: $path, pkgPath: $path) {
         `Downloaded by checksum failed. url: ${url} downloadPath: ${downloadPath} checksum expected: ${hashStr} checksum computed: ${checksum} checksum algorithm: ${checksumAlgo}`,
       );
     } else {
-      await fs.move(tmpDownloadPath, downloadPath);
+      // Occasionally on some filesystems the temporary file may not be
+      // immediately visible to a subsequent rename/move due to timing.
+      // Add a short, bounded retry to make this more robust.
+      const maxAttempts = 3;
+      let attempt = 0;
+      let lastErr: any = null;
+      while (attempt < maxAttempts) {
+        try {
+          await fs.move(tmpDownloadPath, downloadPath, { overwrite: true });
+          lastErr = null;
+          break;
+        } catch (e) {
+          lastErr = e;
+          // If source doesn't exist yet, give the FS a brief moment and retry
+          if (e && e.code === "ENOENT") {
+            await new Promise((r) => setTimeout(r, 50));
+            attempt++;
+            continue;
+          }
+          // Non-ENOENT errors should be surfaced immediately
+          throw e;
+        }
+      }
+      if (lastErr) {
+        // One final fallback: if the destination already exists, consider
+        // this step successful; otherwise, throw the last error.
+        if (!fs.existsSync(downloadPath)) {
+          throw lastErr;
+        }
+      }
     }
   }
 

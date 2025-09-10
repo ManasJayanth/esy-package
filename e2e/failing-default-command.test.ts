@@ -23,7 +23,7 @@ beforeAll(() => {
   /////////////////////////////////////////////////////////////////////////////////////////
 
   // Clearing any previously created test fixtures
-  const testProjectDir = "esy-package-e2e-test-area";
+  const testProjectDir = "esy-package-e2e-test-area-failing";
   testProjectPath = commonSetup(testProjectDir);
 
   // Copying the manifest for esy-hello
