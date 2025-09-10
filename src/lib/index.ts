@@ -342,12 +342,24 @@ export async function generate(cwd: path, pkg: string): Promise<void> {
         .trim();
     } catch {}
     if (!npmMetaData) {
-      const brewFormulaPath = cp
-        .execSync(`brew edit ${pkg} --print-path`, {
-          stdio: [null, "pipe", null],
-        })
-        .toString()
-        .trim();
+      let brewFormulaPath: string;
+      try {
+        brewFormulaPath = cp
+          .execSync(`brew edit ${pkg} --print-path`, {
+            stdio: [null, "pipe", null],
+          })
+          .toString()
+          .trim();
+      } catch (e) {
+        // Fallback: Homebrew may not have the local formula checkout.
+        // Use `brew cat` to fetch the formula source and write it to a temp file.
+        const formulaSrc = cp
+          .execSync(`brew cat ${pkg}`, { stdio: [null, "pipe", null] })
+          .toString();
+        const tmpPath = Path.join(cwd, `.bale-tmp-${pkg}.rb`);
+        fs.writeFileSync(tmpPath, formulaSrc);
+        brewFormulaPath = tmpPath;
+      }
       const etcPath = (file) =>
         Path.join(Path.resolve(__dirname, "..", "..", "etc"), file);
       const etc = {
