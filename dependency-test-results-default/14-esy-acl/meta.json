@@ -1,0 +1,9 @@
+{
+  "name": "esy-acl",
+  "dir": "/Users/manas/development/prometheansacrifice/bale/esy-dependencies/acl",
+  "transitive": 2,
+  "direct": 2,
+  "ok": false,
+  "durationMs": 11739,
+  "mode": "default"
+}

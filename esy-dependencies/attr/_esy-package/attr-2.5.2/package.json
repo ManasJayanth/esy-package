@@ -6,26 +6,12 @@
     "buildsInSource": true,
     "build": [
       [
-        "./configure",
-        "--disable-silent-rules",
-        "--disable-dependency-tracking",
-        "--prefix=#{self.install}"
-      ],
-      [
         "bash",
         "-lc",
-        "sed -i'' -e '/#include <locale.h>/a\\\n#include <libgen.h>' tools/attr.c"
-      ],
-      [
-        "make"
+        "if [ \"$(uname)\" = \"Darwin\" ]; then echo 'Skipping attr build on macOS'; exit 0; fi; set -e; ./configure --disable-silent-rules --disable-dependency-tracking --prefix=#{self.install}; sed -i'' -e '/#include <locale.h>/a\\\n#include <libgen.h>' tools/attr.c; make; make install"
       ]
     ],
-    "install": [
-      [
-        "make",
-        "install"
-      ]
-    ],
+    "install": "true",
     "buildEnv": {
       "PREFIX": "$cur__install",
       "CC_PREFIX": "#{os == 'windows' ? 'x86_64-w64-mingw32-' : '' }"

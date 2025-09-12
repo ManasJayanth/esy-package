@@ -1,0 +1,9 @@
+{
+  "name": "esy-automake",
+  "dir": "/Users/manas/development/prometheansacrifice/bale/esy-dependencies/automake",
+  "transitive": 1,
+  "direct": 1,
+  "ok": false,
+  "durationMs": 22145,
+  "mode": "default"
+}

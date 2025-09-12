@@ -1,0 +1,9 @@
+{
+  "name": "esy-libxml2",
+  "dir": "/Users/manas/development/prometheansacrifice/bale/esy-dependencies/libxml2",
+  "transitive": 0,
+  "direct": 0,
+  "ok": true,
+  "durationMs": 32331,
+  "mode": "default"
+}

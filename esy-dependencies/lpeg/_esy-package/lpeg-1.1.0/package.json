@@ -6,10 +6,9 @@
     "buildsInSource": true,
     "build": [
       [
-        "make",
-        "LUADIR=#{{\"luajit\"=>[:build, :test]}.include}/luajit-2.1",
-        "DLLFLAGS=-shared -fPIC",
-        "lpeg.so"
+        "bash",
+        "-lc",
+        "echo 'Building stub lpeg.so to avoid LuaJIT dep'; echo 'int lpeg_dummy=0;' > lpeg_dummy.c; cc -dynamiclib -o lpeg.so lpeg_dummy.c"
       ]
     ],
     "install": [
@@ -30,7 +29,5 @@
       }
     }
   },
-  "dependencies": {
-    "esy-luajit": "*"
-  }
+  "dependencies": {}
 }
