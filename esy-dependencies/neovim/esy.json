@@ -23,15 +23,6 @@
         "scope": "global"
       }
     },
-    "dependencies": {
-      "esy-cmake": "*",
-      "esy-gettext": "*",
-      "esy-libuv": "*",
-      "esy-lpeg": "*",
-      "esy-luajit": "*",
-      "esy-luv": "*",
-      "esy-unibilium": "*",
-      "esy-utf8proc": "*"
-    }
+    "dependencies": { }
   }
 }
