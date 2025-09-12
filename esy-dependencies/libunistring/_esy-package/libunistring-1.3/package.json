@@ -1,0 +1,31 @@
+{
+  "name": "esy-libunistring",
+  "version": "0.1.0",
+  "description": "esy-libunistring packaged for esy",
+  "esy": {
+    "buildsInSource": true,
+    "build": [
+      [
+        "./configure",
+        "--disable-silent-rules",
+        "--disable-dependency-tracking",
+        "--prefix=#{self.install}"
+      ],
+      [
+        "make"
+      ]
+    ],
+    "install": "make install",
+    "buildEnv": {
+      "PREFIX": "$cur__install",
+      "CC_PREFIX": "#{os == 'windows' ? 'x86_64-w64-mingw32-' : '' }"
+    },
+    "exportedEnv": {
+      "PKG_CONFIG_PATH": {
+        "val": "#{self.lib / 'pkgconfig'}",
+        "scope": "global"
+      }
+    }
+  },
+  "dependencies": {}
+}

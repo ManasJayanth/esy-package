@@ -1,0 +1,106 @@
+{
+  "name": "esy-luv",
+  "version": "0.1.0",
+  "description": "esy-luv packaged for esy",
+  "source": "https://github.com/lunarmodules/lua-compat-5.3/archive/refs/tags/v0.14.4.tar.gz#sha256:a9afa2eb812996039a05c5101067e6a31af9a75eded998937a1ce814afe1b150",
+  "override": {
+    "buildEnv": {
+      "PREFIX": "$cur__install",
+      "CC_PREFIX": "#{os == 'windows' ? 'x86_64-w64-mingw32-' : '' }"
+    },
+    "build": [
+      [
+
+      ],
+      [
+        "cmake",
+        "-S",
+        ".",
+        "-B",
+        "buildjit",
+        "-DWITH_LUA_ENGINE=LuaJIT",
+        "-DBUILD_STATIC_LIBS=ON",
+        "-DBUILD_SHARED_LIBS=ON",
+        "-DWITH_SHARED_LIBUV=ON",
+        "-DLUA_BUILD_TYPE=System",
+        "-DLUA_COMPAT53_DIR=#{self.target}/deps/lua-compat-5.3",
+        "-DBUILD_MODULE=ON"
+      ],
+      [
+        "cmake",
+        "--build",
+        "buildjit"
+      ],
+      [
+        "cmake",
+        "--install",
+        "buildjit"
+      ],
+      [
+        "cmake",
+        "-S",
+        ".",
+        "-B",
+        "buildlua",
+        "-DWITH_LUA_ENGINE=Lua",
+        "-DBUILD_STATIC_LIBS=OFF",
+        "-DBUILD_SHARED_LIBS=OFF",
+        "-DWITH_SHARED_LIBUV=ON",
+        "-DLUA_BUILD_TYPE=System",
+        "-DLUA_COMPAT53_DIR=#{self.target}/deps/lua-compat-5.3",
+        "-DBUILD_MODULE=ON",
+        [
+
+        ],
+        [
+          "cmake",
+          "-S",
+          ".",
+          "-B",
+          "buildjit",
+          "-DWITH_LUA_ENGINE=LuaJIT",
+          "-DBUILD_STATIC_LIBS=ON",
+          "-DBUILD_SHARED_LIBS=ON",
+          "-DWITH_SHARED_LIBUV=ON",
+          "-DLUA_BUILD_TYPE=System",
+          "-DLUA_COMPAT53_DIR=#{self.target}/deps/lua-compat-5.3",
+          "-DBUILD_MODULE=ON"
+        ],
+        [
+          "cmake",
+          "--build",
+          "buildjit"
+        ],
+        [
+          "cmake",
+          "--install",
+          "buildjit"
+        ]
+      ],
+      [
+        "cmake",
+        "--build",
+        "buildlua"
+      ],
+      [
+        "cmake",
+        "--install",
+        "buildlua"
+      ]
+    ],
+    "install": "make install",
+    "buildsInSource": true,
+    "exportedEnv": {
+      "PKG_CONFIG_PATH": {
+        "val": "#{self.lib / 'pkgconfig'}",
+        "scope": "global"
+      }
+    },
+    "dependencies": {
+      "esy-cmake": "*",
+      "esy-lua": "*",
+      "esy-luajit": "*",
+      "esy-libuv": "*"
+    }
+  }
+}

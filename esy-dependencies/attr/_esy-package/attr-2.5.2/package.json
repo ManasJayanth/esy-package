@@ -1,0 +1,41 @@
+{
+  "name": "esy-attr",
+  "version": "0.1.0",
+  "description": "esy-attr packaged for esy",
+  "esy": {
+    "buildsInSource": true,
+    "build": [
+      [
+        "./configure",
+        "--disable-silent-rules",
+        "--disable-dependency-tracking",
+        "--prefix=#{self.install}"
+      ],
+      [
+        "bash",
+        "-lc",
+        "sed -i'' -e '/#include <locale.h>/a\\\n#include <libgen.h>' tools/attr.c"
+      ],
+      [
+        "make"
+      ]
+    ],
+    "install": [
+      [
+        "make",
+        "install"
+      ]
+    ],
+    "buildEnv": {
+      "PREFIX": "$cur__install",
+      "CC_PREFIX": "#{os == 'windows' ? 'x86_64-w64-mingw32-' : '' }"
+    },
+    "exportedEnv": {
+      "PKG_CONFIG_PATH": {
+        "val": "#{self.lib / 'pkgconfig'}",
+        "scope": "global"
+      }
+    }
+  },
+  "dependencies": {}
+}

@@ -58,6 +58,7 @@ async function runE2E(
   packageRecipeTestsPath: path,
   userSpecifiedPrefixPath: path,
   registryUrl: url,
+  authToken?: string,
 ) {
   let testProjectPath = Path.join(Os.tmpdir(), "esy-test");
   if (fse.existsSync(packageRecipeTestsPath)) {
@@ -69,6 +70,22 @@ async function runE2E(
     fse.copySync(packageRecipeTestsPath, testProjectPath, {
       overwrite: true,
     });
+    // Ensure test project can authenticate to local verdaccio
+    if (authToken) {
+      try {
+        const u = new URL(String(registryUrl));
+        const npmrc = [
+          `registry=${u.origin}/`,
+          `//${u.host}/:_authToken="${authToken}"`,
+          `always-auth=false`,
+          `
+`,
+        ].join("\n");
+        fs.writeFileSync(Path.join(testProjectPath, ".npmrc"), npmrc, {
+          flag: "a",
+        });
+      } catch {}
+    }
     const prefixPath = userSpecifiedPrefixPath ?? setupTemporaryEsyPrefix();
     Log.info("Running esy install");
     Log.process(

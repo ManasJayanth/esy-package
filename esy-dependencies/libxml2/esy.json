@@ -1,0 +1,40 @@
+{
+  "name": "esy-libxml2",
+  "version": "0.1.0",
+  "description": "esy-libxml2 packaged for esy",
+  "source": "https://download.gnome.org/sources/libxml2/2.12/libxml2-2.12.7.tar.xz#sha256:24ae78ff1363a973e6d8beba941a7945da2ac056e19b53956aeb6927fd6cfb56",
+  "override": {
+    "buildEnv": {
+      "PREFIX": "$cur__install",
+      "CC_PREFIX": "#{os == 'windows' ? 'x86_64-w64-mingw32-' : '' }"
+    },
+    "build": [
+      [
+        "./configure",
+        "--disable-silent-rules",
+        "--disable-dependency-tracking",
+        "--prefix=#{self.install}",
+        "--sysconfdir=#{self.etc}",
+        "--with-history",
+        "--with-http",
+        "--with-legacy",
+        "--without-lzma",
+        "--without-python",
+        "--without-icu"
+      ],
+      [
+        "make"
+      ]
+    ],
+    "install": "make install",
+    "buildsInSource": true,
+    "exportedEnv": {
+      "PKG_CONFIG_PATH": {
+        "val": "#{self.lib / 'pkgconfig'}",
+        "scope": "global"
+      }
+    },
+    "dependencies": {
+    }
+  }
+}

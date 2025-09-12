@@ -115,9 +115,17 @@ export function fetch(
               });
           }
         } else {
-          reject(
-            new Error(`Non 200 statusCode for url: ${url.format(urlObj)}`),
-          );
+          // Non-2xx: try a friendly mirror for known hosts before failing
+          const status = response.statusCode;
+          const host = (urlObj && (urlObj as any).hostname) || (urlObj as any).host || '';
+          if (status && status >= 400 && /^(ftp\.gnu\.org)$/i.test(String(host))) {
+            const alt = { ...urlObj, hostname: 'ftpmirror.gnu.org', host: 'ftpmirror.gnu.org' } as any;
+            fetch(alt, pathStr).then(resolve).catch(() => {
+              reject(new Error(`Non 200 statusCode for url: ${url.format(urlObj)}`));
+            });
+          } else {
+            reject(new Error(`Non 200 statusCode for url: ${url.format(urlObj)}`));
+          }
         }
       })
       .on("error", reject);

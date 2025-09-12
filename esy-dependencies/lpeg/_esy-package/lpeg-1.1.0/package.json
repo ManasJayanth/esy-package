@@ -1,0 +1,36 @@
+{
+  "name": "esy-lpeg",
+  "version": "0.1.0",
+  "description": "esy-lpeg packaged for esy",
+  "esy": {
+    "buildsInSource": true,
+    "build": [
+      [
+        "make",
+        "LUADIR=#{{\"luajit\"=>[:build, :test]}.include}/luajit-2.1",
+        "DLLFLAGS=-shared -fPIC",
+        "lpeg.so"
+      ]
+    ],
+    "install": [
+      [
+        "bash",
+        "-lc",
+        "mkdir -p #{self.lib} && cp -f lpeg.so #{self.lib}/liblpeg.so"
+      ]
+    ],
+    "buildEnv": {
+      "PREFIX": "$cur__install",
+      "CC_PREFIX": "#{os == 'windows' ? 'x86_64-w64-mingw32-' : '' }"
+    },
+    "exportedEnv": {
+      "PKG_CONFIG_PATH": {
+        "val": "#{self.lib / 'pkgconfig'}",
+        "scope": "global"
+      }
+    }
+  },
+  "dependencies": {
+    "esy-luajit": "*"
+  }
+}

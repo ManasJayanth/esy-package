@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Bale <noreply@example.com>
+Date: Fri, 12 Sep 2025 09:53:00 +0000
+Subject: [PATCH] macOS: include libgen.h for basename
+
+On macOS (Darwin), `basename` is declared in <libgen.h>. Without this
+include, the build fails with an implicit declaration error and an
+incompatible integer-to-pointer conversion when assigning to `char *`.
+
+--- a/tools/attr.c
++++ b/tools/attr.c
+@@
+ #include <stdlib.h>
+ #include <unistd.h>
+ #include <errno.h>
+ #include <string.h>
+ #include <locale.h>
++#include <libgen.h>
+ 
+ #include <attr/attributes.h>
+ 
+ #include "misc.h"
+ 
+ #define	SETOP		1		/* do a SET operation */
+

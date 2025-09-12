@@ -1,0 +1,25 @@
+{
+  "name": "esy-cmake",
+  "version": "0.1.0",
+  "description": "Prebuilt CMake for esy (macOS universal)",
+  "source": "https://github.com/Kitware/CMake/releases/download/v3.30.4/cmake-3.30.4-macos-universal.tar.gz#sha256:12bfd640048511fafd57cae1944fde7d66182d2cd82de2d5b17944b17fd4efc2",
+  "override": {
+    "buildEnv": {
+      "PREFIX": "$cur__install"
+    },
+    "build": [
+      [
+        "bash",
+        "-lc",
+        "mkdir -p #{self.bin} #{self.share} && rsync -a CMake.app/Contents/bin/ #{self.bin}/ && rsync -a CMake.app/Contents/share/ #{self.share}/"
+      ]
+    ],
+    "install": "true",
+    "buildsInSource": true,
+    "exportedEnv": {
+      "PATH": { "val": "#{self.bin}:$PATH", "scope": "global" }
+    },
+    "dependencies": {
+    }
+  }
+}

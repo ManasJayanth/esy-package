@@ -1,0 +1,41 @@
+{
+  "name": "esy-libuv",
+  "version": "0.1.0",
+  "description": "esy-libuv packaged for esy",
+  "source": "https://github.com/libuv/libuv/archive/refs/tags/v1.50.0.tar.gz#sha256:b1ec56444ee3f1e10c8bd3eed16ba47016ed0b94fe42137435aaf2e0bd574579",
+  "override": {
+    "buildEnv": {
+      "PREFIX": "$cur__install",
+      "CC_PREFIX": "#{os == 'windows' ? 'x86_64-w64-mingw32-' : '' }"
+    },
+    "build": [
+      [
+        "bash",
+        "-lc",
+        "mkdir -p build && cd build && cmake .. -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=#{self.install}"
+      ],
+      [
+        "bash",
+        "-lc",
+        "cmake --build build --config Release"
+      ]
+    ],
+    "install": [
+      [
+        "bash",
+        "-lc",
+        "cmake --install build"
+      ]
+    ],
+    "buildsInSource": true,
+    "exportedEnv": {
+      "PKG_CONFIG_PATH": {
+        "val": "#{self.lib / 'pkgconfig'}",
+        "scope": "global"
+      }
+    },
+    "dependencies": {
+      "esy-cmake": "*"
+    }
+  }
+}

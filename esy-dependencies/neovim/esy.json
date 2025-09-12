@@ -1,0 +1,56 @@
+{
+  "name": "esy-neovim",
+  "version": "0.1.0",
+  "description": "esy-neovim packaged for esy",
+  "source": "https://github.com/neovim/neovim/archive/refs/tags/v0.10.2.tar.gz#sha256:546cb2da9fffbb7e913261344bbf4cf1622721f6c5a67aa77609e976e78b8e89",
+  "override": {
+    "buildEnv": {
+      "PREFIX": "$cur__install",
+      "CC_PREFIX": "#{os == 'windows' ? 'x86_64-w64-mingw32-' : '' }"
+    },
+    "build": [
+      [
+
+      ],
+      [
+        "cmake",
+        "-S",
+        ".",
+        "-B",
+        "build",
+        "-DLUV_LIBRARY=#{luv.lib}/libluv.so",
+        "-DLIBUV_LIBRARY=#{libuv.lib}/libuv.so",
+        "-DLPEG_LIBRARY=#{lpeg.lib}/liblpeg.so"
+      ],
+      [
+        "cmake",
+        "--build",
+        "build"
+      ],
+      [
+        "cmake",
+        "--install",
+        "build"
+      ]
+    ],
+    "install": "make install",
+    "buildsInSource": true,
+    "exportedEnv": {
+      "PKG_CONFIG_PATH": {
+        "val": "#{self.lib / 'pkgconfig'}",
+        "scope": "global"
+      }
+    },
+    "dependencies": {
+      "esy-cmake": "*",
+      "esy-gettext": "*",
+      "esy-libuv": "*",
+      "esy-lpeg": "*",
+      "esy-luajit": "*",
+      "esy-luv": "*",
+      "esy-tree-sitter": "*",
+      "esy-unibilium": "*",
+      "esy-utf8proc": "*"
+    }
+  }
+}

@@ -1,0 +1,249 @@
+2024-10-16  Bruno Haible  <bruno@clisp.org>
+
+	Prepare for 1.3 release.
+	* version.sh: Bump version number, date, gnulib version.
+	* README: Update version.
+	* lib/Makefile.am (LTV_*): Update to 7:0:2 (determined with help from
+	gnulib's libtool-next-version).
+
+2024-10-16  Bruno Haible  <bruno@clisp.org>
+
+	Assume the target system has <stdbool.h>.
+	* gnulib-local/lib/unistr.in.h.diff: Simplify.
+	* gnulib-local/lib/unicase.in.h.diff: Remove file.
+	* gnulib-local/lib/unictype.in.h.diff: Remove file.
+	* gnulib-local/lib/unigbrk.in.h.diff: Remove file.
+	* gnulib-local/Makefile.am (EXTRA_DIST): Remove them.
+	* lib/stdbool.mini.h: Remove file.
+	* lib/Makefile.am (nobase_nodist_include_HEADERS): Remove unistring/stdbool.h.
+	(unistring/stdbool.h): Remove rule.
+	(BUILT_SOURCES, MOSTLYCLEANFILES, CLEANFILES, EXTRA_DIST): Update.
+
+2024-10-16  Bruno Haible  <bruno@clisp.org>
+
+	Fix list of exports on Windows platforms.
+	* woe32dll/unistring-exports.c (UC_PROPERTY_ID_COMPAT_MATH_START,
+	UC_PROPERTY_ID_COMPAT_MATH_CONTINUE, UC_PROPERTY_IDS_UNARY_OPERATOR): Add,
+	missing since 2024-01-31.
+	(UC_PROPERTY_PREPENDED_CONCATENATION_MARK): Add, missing since 2024-02-12.
+	(UC_PROPERTY_MODIFIER_COMBINING_MARK): Add, missing since 2024-09-13.
+
+2024-10-16  Bruno Haible  <bruno@clisp.org>
+
+	Work around a libtool bug.
+	Reported at <https://debbugs.gnu.org/cgi/bugreport.cgi?bug=73737>.
+
+	* m4/libtool.m4: Protect access to $multilib.
+
+2024-09-26  Bruno Haible  <bruno@clisp.org>
+
+	Upgrade to libtool 2.5.3.
+	* m4/libtool.m4: Update from libtool-2.5.3.
+	* m4/ltoptions.m4: Likewise.
+	* m4/ltsugar.m4: Likewise.
+	* m4/ltversion.m4: Likewise.
+	* m4/lt~obsolete.m4: Likewise.
+	* build-aux/ltmain.sh: Likewise.
+
+2024-09-13  Bruno Haible  <bruno@clisp.org>
+
+	Update to Unicode 16.0.0.
+	* gnulib-m4/gnulib-cache.m4: Regenerated.
+	* doc/unictype.texi (Joining group): Document UC_JOINING_GROUP_KASHMIRI_YEH.
+	(Properties as objects): Document UC_PROPERTY_MODIFIER_COMBINING_MARK.
+	(Properties as functions): Document uc_is_property_modifier_combining_mark.
+	* NEWS: Mention the changes.
+
+2024-09-01  Bruno Haible  <bruno@clisp.org>
+
+	Replace FSF snail-mail addresses with URLs.
+	* build-aux/texi2html: Update GPL license notice.
+
+2024-08-24  Bruno Haible  <bruno@clisp.org>
+
+	Fix shared library support in 32-bit mode on FreeBSD/powerpc64.
+	Patch from <https://savannah.gnu.org/patch/index.php?10469>.
+
+	* m4/libtool.m4: On FreeBSD, fix shlibpath_var.
+
+2024-07-12  Bruno Haible  <bruno@clisp.org>
+
+	Switch to autoconf 2.72, automake 1.17.
+	* autogen.sh: Update comments.
+
+2024-06-20  Bruno Haible  <bruno@clisp.org>
+
+	Update NEWS.
+	* NEWS: Mention the u*_*printf fix, done in gnulib on 2024-06-18.
+
+2024-06-10  Bruno Haible  <bruno@clisp.org>
+
+	Update HACKING.
+	* HACKING: Mention the multi-platform continuous integration.
+
+2024-06-05  Bruno Haible  <bruno@clisp.org>
+
+	Update DEPENDENCIES.
+	* DEPENDENCIES: libiconv is needed again on macOS 14. Mention win-iconv as an
+	alternative.
+
+2024-04-04  Bruno Haible  <bruno@clisp.org>
+
+	Fix macro file 'serial' numbers for 'aclocal --install'.
+	* m4/exported.m4: Make 'serial' effective.
+	* m4/init-package-version.m4: Likewise.
+	* m4/woe32-dll.m4: Likewise.
+
+2024-02-24  Bruno Haible  <bruno@clisp.org>
+
+	Add a list of manual steps for making a release.
+
+2024-02-24  Bruno Haible  <bruno@clisp.org>
+
+	Prepare for 1.2 release.
+	* version.sh: Bump version number, date, gnulib version.
+	* README: Update version.
+	* lib/Makefile.am (LTV_*): Update to 6:0:1 (determined with help from
+	gnulib's libtool-next-version).
+
+2024-02-24  Bruno Haible  <bruno@clisp.org>
+
+	Generate the ChangeLog from the git history.
+	* autogen.sh (GNULIB_MODULES): Add gitlog-to-changelog.
+	* build-aux/git-log-fix: New file, from GNU coreutils.
+	* Makefile.am (EXTRA_DIST): Add it.
+	(dist-hook, gen-ChangeLog): New rules.
+	* ChangeLog.0: New file, moved here from ChangeLog, with a few added entries
+	for 2023.
+	* ChangeLog: New empty file.
+	* .gitattributes: Remove file.
+
+2024-02-24  Bruno Haible  <bruno@clisp.org>
+
+	Update NEWS.
+	* NEWS: Mention the uN_strstr improvement, done in gnulib on 2023-04-02.
+
+2024-02-23  Bruno Haible  <bruno@clisp.org>
+
+	Improve doc.
+	Reported by Pádraig Brady <P@draigBrady.com>
+	in <https://lists.gnu.org/archive/html/bug-libunistring/2019-02/msg00000.html>.
+
+	* doc/unistr.texi (Comparing NUL terminated Unicode strings): Clarify that
+	uN_strcmp ignores locale collation rules.
+	* doc/unicase.texi: Fix typos.
+	(Case insensitive comparison): Clarify that uN_casecmp ignores locale collation
+	rules.
+
+2024-02-23  Bruno Haible  <bruno@clisp.org>
+
+	Improve doc.
+	Reported by Nikos Mavrogiannopoulos <n.mavrogiannopoulos@gmail.com>
+	in <https://lists.gnu.org/archive/html/bug-libunistring/2016-11/msg00000.html>.
+
+	* doc/libunistring.texi (Conventions): Explain the (resultbuf, lengthp) return
+	value convention from the user's point of view.
+
+2024-02-23  Bruno Haible  <bruno@clisp.org>
+
+	Clarify documentation of uc_mirror_char, part 2.
+	* doc/unictype.texi (Mirrored character): Explain which characters
+	are affected.
+
+2024-02-23  Bruno Haible  <bruno@clisp.org>
+
+	Clarify documentation of uc_mirror_char.
+	Reported by Daurnimator <quae@daurnimator.com>
+	at <https://lists.gnu.org/archive/html/bug-libunistring/2016-11/msg00004.html>.
+
+	* doc/unictype.texi (Mirrored character): Explain the surprising
+	behaviour.
+
+2024-02-23  Bruno Haible  <bruno@clisp.org>
+
+	Document that in format strings, the %n directive is no longer supported.
+	* doc/unistdio.texi: Mention that %n is not supported.
+	* NEWS: Mention the change.
+
+2024-02-21  Bruno Haible  <bruno@clisp.org>
+
+	Update after gnulib changed.
+
+2024-02-21  Bruno Haible  <bruno@clisp.org>
+
+	Autogenerate the implementation of _libunistring_unicode_version.
+	* autogen.sh (GNULIB_MODULES): Add unimetadata/base, unimetadata/u-version.
+	* lib/Makefile.am (nodist_include_HEADERS): Add unimetadata.h.
+	(HEADERS_WITH_EXTERNS): Add unimetadata.h.
+	* lib/unistring/version.in.h: Include unimetadata.h.
+	(_libunistring_unicode_version): Remove declaration.
+	* lib/version.c: Undo last change.
+	* woe32dll/unistring-exports.c: Update comments.
+
+2024-02-12  Bruno Haible  <bruno@clisp.org>
+
+	New property Prepended_Concatenation_Mark.
+	* doc/unictype.texi (Properties as objects): Document
+	UC_PROPERTY_PREPENDED_CONCATENATION_MARK.
+	(Properties as functions): Document uc_is_property_prepended_concatenation_mark.
+	* NEWS: Mention them.
+
+2024-01-31  Bruno Haible  <bruno@clisp.org>
+
+	New properties ID_Compat_Math_Continue ID_Compat_Math_Start IDS_Unary_Operator.
+	* doc/unictype.texi (Properties as objects): Document
+	UC_PROPERTY_ID_COMPAT_MATH_START, UC_PROPERTY_ID_COMPAT_MATH_CONTINUE,
+	UC_PROPERTY_IDS_UNARY_OPERATOR.
+	(Properties as functions): Document uc_is_property_id_compat_math_start,
+	uc_is_property_id_compat_math_continue, uc_is_property_ids_unary_operator.
+	* NEWS: Mention them.
+
+2024-01-30  Bruno Haible  <bruno@clisp.org>
+
+	Update .gitignore.
+
+2024-01-30  Bruno Haible  <bruno@clisp.org>
+
+	Update to Unicode 15.1.0.
+	* autogen.sh (GNULIB_MODULES): Add unictype/incb-all.
+	* gnulib-m4/gnulib-cache.m4: Regenerated.
+	* lib/version.c (_libunistring_unicode_version): Bump.
+	* doc/unictype.texi (Other attributes): New section.
+	* doc/unigbrk.texi (Grapheme cluster breaks in a string): Give some details
+	about when the functions have limitations.
+	* NEWS: Mention the change.
+
+2024-01-30  Bruno Haible  <bruno@clisp.org>
+
+	Update after gnulib changed.
+
+2024-01-30  Bruno Haible  <bruno@clisp.org>
+
+	doc: Improve documentation about meta-information.
+	* doc/libunistring.texi (Include files): Fix documentation of
+	_LIBUNISTRING_VERSION and _libunistring_version (incorrect since 2010-05-14).
+	Add documentation of _libunistring_unicode_version.
+	* NEWS: Mention _libunistring_unicode_version.
+
+2024-01-29  Bruno Haible  <bruno@clisp.org>
+
+	Add meta-information about the Unicode version.
+	Suggested by Roger Crew <wrog@wrog.net> in
+	<https://lists.gnu.org/archive/html/bug-libunistring/2023-08/msg00000.html>.
+
+	* lib/unistring/version.in.h (_libunistring_unicode_version): New declaration.
+	* lib/version.c (_libunistring_unicode_version): New variable.
+	* woe32dll/unistring-exports.c: Export it.
+
+2023-09-18  Bruno Haible  <bruno@clisp.org>
+
+	Fix shared library support on Android.
+	Patch from <https://savannah.gnu.org/patch/index.php?10393>.
+
+	* m4/libtool.m4: On Android, fix library_names_spec and
+	hardcode_libdir_flag_spec.
+
+2023-09-16  Bruno Haible  <bruno@clisp.org>
+
+	Fix a misnomer.
+	* woe32dll/export.h: Update comment.

@@ -1,0 +1,47 @@
+{
+  "name": "esy-gettext",
+  "version": "0.1.0",
+  "description": "esy-gettext packaged for esy",
+  "source": "https://ftp.gnu.org/gnu/gettext/gettext-0.24.tar.gz#sha256:c918503d593d70daf4844d175a13d816afacb667c06fba1ec9dcd5002c1518b7",
+  "override": {
+    "buildEnv": {
+      "PREFIX": "$cur__install",
+      "CC_PREFIX": "#{os == 'windows' ? 'x86_64-w64-mingw32-' : '' }"
+    },
+    "build": [
+      [
+        "./configure",
+        "--disable-dependency-tracking",
+        "--without-libunistring-prefix",
+        "--disable-silent-rules",
+        "--with-included-glib",
+        "--with-included-libcroco",
+        "--with-emacs",
+        "--with-lispdir=#{self.etc}",
+        "--disable-java",
+        "--disable-csharp",
+        "--without-git",
+        "--without-cvs",
+        "--without-xz",
+        "--without-libxml2"
+      ],
+      [
+        "make"
+      ],
+      [
+        "make",
+        "install"
+      ]
+    ],
+    "install": "make install",
+    "buildsInSource": true,
+    "exportedEnv": {
+      "PKG_CONFIG_PATH": {
+        "val": "#{self.lib / 'pkgconfig'}",
+        "scope": "global"
+      }
+    },
+    "dependencies": {
+    }
+  }
+}
