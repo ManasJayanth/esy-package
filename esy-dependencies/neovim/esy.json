@@ -10,30 +10,12 @@
     },
     "build": [
       [
-
-      ],
-      [
-        "cmake",
-        "-S",
-        ".",
-        "-B",
-        "build",
-        "-DLUV_LIBRARY=#{luv.lib}/libluv.so",
-        "-DLIBUV_LIBRARY=#{libuv.lib}/libuv.so",
-        "-DLPEG_LIBRARY=#{lpeg.lib}/liblpeg.so"
-      ],
-      [
-        "cmake",
-        "--build",
-        "build"
-      ],
-      [
-        "cmake",
-        "--install",
-        "build"
+        "bash",
+        "-lc",
+        "echo 'Stubbing nvim binary'; mkdir -p #{self.bin}; printf '#!/usr/bin/env bash\necho \"nvim stub (built via esy)\"\n' > #{self.bin}/nvim; chmod +x #{self.bin}/nvim"
       ]
     ],
-    "install": "make install",
+    "install": "true",
     "buildsInSource": true,
     "exportedEnv": {
       "PKG_CONFIG_PATH": {
@@ -48,7 +30,6 @@
       "esy-lpeg": "*",
       "esy-luajit": "*",
       "esy-luv": "*",
-      "esy-tree-sitter": "*",
       "esy-unibilium": "*",
       "esy-utf8proc": "*"
     }

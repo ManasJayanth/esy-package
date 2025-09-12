@@ -24,7 +24,7 @@
       [
         "bash",
         "-lc",
-        "cmake --install build"
+        "cmake --install build && (cd #{self.lib} && if [ -f libuv.dylib ] && [ ! -f libuv.so ]; then ln -sf libuv.dylib libuv.so; fi)"
       ]
     ],
     "buildsInSource": true,
