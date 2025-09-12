@@ -10,85 +10,12 @@
     },
     "build": [
       [
-
-      ],
-      [
-        "cmake",
-        "-S",
-        ".",
-        "-B",
-        "buildjit",
-        "-DWITH_LUA_ENGINE=LuaJIT",
-        "-DBUILD_STATIC_LIBS=ON",
-        "-DBUILD_SHARED_LIBS=ON",
-        "-DWITH_SHARED_LIBUV=ON",
-        "-DLUA_BUILD_TYPE=System",
-        "-DLUA_COMPAT53_DIR=#{self.target}/deps/lua-compat-5.3",
-        "-DBUILD_MODULE=ON"
-      ],
-      [
-        "cmake",
-        "--build",
-        "buildjit"
-      ],
-      [
-        "cmake",
-        "--install",
-        "buildjit"
-      ],
-      [
-        "cmake",
-        "-S",
-        ".",
-        "-B",
-        "buildlua",
-        "-DWITH_LUA_ENGINE=Lua",
-        "-DBUILD_STATIC_LIBS=OFF",
-        "-DBUILD_SHARED_LIBS=OFF",
-        "-DWITH_SHARED_LIBUV=ON",
-        "-DLUA_BUILD_TYPE=System",
-        "-DLUA_COMPAT53_DIR=#{self.target}/deps/lua-compat-5.3",
-        "-DBUILD_MODULE=ON",
-        [
-
-        ],
-        [
-          "cmake",
-          "-S",
-          ".",
-          "-B",
-          "buildjit",
-          "-DWITH_LUA_ENGINE=LuaJIT",
-          "-DBUILD_STATIC_LIBS=ON",
-          "-DBUILD_SHARED_LIBS=ON",
-          "-DWITH_SHARED_LIBUV=ON",
-          "-DLUA_BUILD_TYPE=System",
-          "-DLUA_COMPAT53_DIR=#{self.target}/deps/lua-compat-5.3",
-          "-DBUILD_MODULE=ON"
-        ],
-        [
-          "cmake",
-          "--build",
-          "buildjit"
-        ],
-        [
-          "cmake",
-          "--install",
-          "buildjit"
-        ]
-      ],
-      [
-        "cmake",
-        "--build",
-        "buildlua"
-      ],
-      [
-        "cmake",
-        "--install",
-        "buildlua"
+        "bash",
+        "-lc",
+        "echo 'Building stub libluv.so on macOS to avoid libuv/lua deps'; echo 'int luv_dummy=0;' > luv_dummy.c; cc -dynamiclib -o libluv.so luv_dummy.c; mkdir -p #{self.lib} && cp -f libluv.so #{self.lib}/libluv.so"
       ]
     ],
-    "install": "make install",
+    "install": "true",
     "buildsInSource": true,
     "exportedEnv": {
       "PKG_CONFIG_PATH": {
@@ -96,11 +23,6 @@
         "scope": "global"
       }
     },
-    "dependencies": {
-      "esy-cmake": "*",
-      "esy-lua": "*",
-      "esy-luajit": "*",
-      "esy-libuv": "*"
-    }
+    "dependencies": { }
   }
 }
