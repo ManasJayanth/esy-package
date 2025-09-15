@@ -34,6 +34,10 @@ commonOptions(program)
     "Path that verdaccio can use for storage as it runs the tests",
   )
   .option(
+    "-E, --ephemeral-storage",
+    "Use a unique temporary verdaccio storage per run and clean it up after",
+  )
+  .option(
     "-p, --pack [packingCommands]",
     "Specify sequence of commands, separated by &&, to package for NPM",
   )
@@ -44,6 +48,7 @@ commonOptions(program)
       storagePath,
       prefixPath,
       registryLogLevel,
+      ephemeralStorage,
     } = program.opts();
     await defaultCommand(
       pack,
@@ -51,6 +56,7 @@ commonOptions(program)
       storagePath,
       prefixPath,
       registryLogLevel,
+      ephemeralStorage,
     ).catch(globalErrorHandler);
   });
 
@@ -93,6 +99,10 @@ commonOptions(program.command("shell"))
     "-p, --pack [packingCommands]",
     "Specify sequence of commands, separated by &&, to package for NPM",
   )
+  .option(
+    "-E, --ephemeral-storage",
+    "Use a unique temporary verdaccio storage per run and clean it up after",
+  )
   .action(async () => {
     const {
       pack,
@@ -100,6 +110,7 @@ commonOptions(program.command("shell"))
       storagePath,
       prefixPath,
       registryLogLevel,
+      ephemeralStorage,
     } = program.opts();
     await shellCommand(
       pack,
@@ -107,6 +118,7 @@ commonOptions(program.command("shell"))
       storagePath,
       prefixPath,
       registryLogLevel,
+      ephemeralStorage,
     ).catch(globalErrorHandler);
   });
 
