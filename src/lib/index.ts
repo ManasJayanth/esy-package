@@ -289,7 +289,7 @@ async function e2eShell(
         const npmrc = [
           `registry=${u.origin}/`,
           `//${u.host}/:_authToken="${authToken}"`,
-          `always-auth=false`,
+          `always-auth=true`,
           `\n`,
         ].join("\n");
         fs.writeFileSync(Path.join(testProjectPath, ".npmrc"), npmrc, {
