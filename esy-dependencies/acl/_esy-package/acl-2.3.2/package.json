@@ -1,0 +1,34 @@
+{
+  "name": "esy-acl",
+  "version": "0.1.0",
+  "description": "esy-acl packaged for esy",
+  "esy": {
+    "buildsInSource": true,
+    "build": [
+      [],
+      [
+        "./configure",
+        "--disable-silent-rules"
+      ],
+      [
+        "make",
+        "install"
+      ]
+    ],
+    "install": "make install",
+    "buildEnv": {
+      "PREFIX": "$cur__install",
+      "CC_PREFIX": "#{os == 'windows' ? 'x86_64-w64-mingw32-' : '' }"
+    },
+    "exportedEnv": {
+      "PKG_CONFIG_PATH": {
+        "val": "#{self.lib / 'pkgconfig'}",
+        "scope": "global"
+      }
+    }
+  },
+  "dependencies": {
+    "esy-attr": "*",
+    "esy-linux": "*"
+  }
+}

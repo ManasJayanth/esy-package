@@ -1,0 +1,9 @@
+{
+  "name": "esy-luajit",
+  "dir": "/Users/manas/development/prometheansacrifice/bale/esy-dependencies/luajit",
+  "transitive": 0,
+  "direct": 0,
+  "ok": true,
+  "durationMs": 13356,
+  "mode": "default"
+}

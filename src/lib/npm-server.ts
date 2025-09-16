@@ -36,9 +36,11 @@ async function init(
     },
     packages: {
       [testPackageName]: {
-        access: "$anonymous",
+        // Allow both authenticated and anonymous clients to read and publish
+        // within the local test registry to avoid spurious ACL denials.
+        access: "$all",
         publish: "$all",
-        unpublish: "$anonymous",
+        unpublish: "$all",
         proxy: [],
       },
       "@*/*": {

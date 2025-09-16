@@ -1,0 +1,33 @@
+{
+  "name": "esy-automake",
+  "version": "0.1.0",
+  "description": "esy-automake packaged for esy",
+  "esy": {
+    "buildsInSource": true,
+    "build": [
+      [],
+      [
+        "./configure",
+        "--prefix=#{self.install}"
+      ],
+      [
+        "make",
+        "install"
+      ]
+    ],
+    "install": "make install",
+    "buildEnv": {
+      "PREFIX": "$cur__install",
+      "CC_PREFIX": "#{os == 'windows' ? 'x86_64-w64-mingw32-' : '' }"
+    },
+    "exportedEnv": {
+      "PKG_CONFIG_PATH": {
+        "val": "#{self.lib / 'pkgconfig'}",
+        "scope": "global"
+      }
+    }
+  },
+  "dependencies": {
+    "esy-autoconf": "*"
+  }
+}

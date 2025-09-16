@@ -11,6 +11,9 @@ const debug = Debug("bale:esy");
 function craftEnv(registryUrl: string, prefixPath: string) {
   let env = {
     NPM_CONFIG_REGISTRY: registryUrl,
+    npm_config_registry: registryUrl,
+    NPM_CONFIG_ALWAYS_AUTH: 'false',
+    npm_config_always_auth: 'false',
     ESY__PREFIX: prefixPath,
     ...process.env,
   };
@@ -25,6 +28,10 @@ async function subcommand(
   registryUrl: url,
 ): Promise<ProcessOutput> {
   let env = craftEnv(registryUrl, prefixPath);
+  // Ensure npm uses the test project's .npmrc for auth to local registry
+  const userConfig = Path.join(String(cwd), ".npmrc");
+  env["NPM_CONFIG_USERCONFIG"] = userConfig;
+  (env as any)["npm_config_userconfig"] = userConfig;
   delete env["_"];
   return new Promise(function (resolve, reject) {
     debug(cwd);

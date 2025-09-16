@@ -1,0 +1,36 @@
+{
+  "name": "esy-automake",
+  "version": "0.1.0",
+  "description": "esy-automake packaged for esy",
+  "source": "https://ftp.gnu.org/gnu/automake/automake-1.17.tar.xz#sha256:8920c1fc411e13b90bf704ef9db6f29d540e76d232cb3b2c9f4dc4cc599bd990",
+  "override": {
+    "buildEnv": {
+      "PREFIX": "$cur__install",
+      "CC_PREFIX": "#{os == 'windows' ? 'x86_64-w64-mingw32-' : '' }"
+    },
+    "build": [
+      [
+
+      ],
+      [
+        "./configure",
+        "--prefix=#{self.install}"
+      ],
+      [
+        "make",
+        "install"
+      ]
+    ],
+    "install": "make install",
+    "buildsInSource": true,
+    "exportedEnv": {
+      "PKG_CONFIG_PATH": {
+        "val": "#{self.lib / 'pkgconfig'}",
+        "scope": "global"
+      }
+    },
+    "dependencies": {
+      "esy-autoconf": "*"
+    }
+  }
+}

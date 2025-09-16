@@ -17,10 +17,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
 
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
 
       - name: Install npm dependencies
         run: npm install
@@ -34,9 +34,11 @@ jobs:
       - name: Pack into tarball for npm release
         run: npm pack
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
+          name: npm-tarball-${{ matrix.os }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: "*.tgz"
+          overwrite: true
 
       - name: Test on esy-packages/template
         shell: bash

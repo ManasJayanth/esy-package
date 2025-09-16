@@ -1,0 +1,131 @@
+{
+  "mode": "default",
+  "results": [
+    {
+      "name": "esy-attr",
+      "dir": "/Users/manas/development/prometheansacrifice/bale/esy-dependencies/attr",
+      "transitive": 0,
+      "direct": 0,
+      "ok": true,
+      "durationMs": 7568,
+      "mode": "default"
+    },
+    {
+      "name": "esy-cmake",
+      "dir": "/Users/manas/development/prometheansacrifice/bale/esy-dependencies/cmake",
+      "transitive": 0,
+      "direct": 0,
+      "ok": true,
+      "durationMs": 44300,
+      "mode": "default"
+    },
+    {
+      "name": "esy-gettext",
+      "dir": "/Users/manas/development/prometheansacrifice/bale/esy-dependencies/gettext",
+      "transitive": 0,
+      "direct": 0,
+      "ok": true,
+      "durationMs": 33230,
+      "mode": "default"
+    },
+    {
+      "name": "esy-libunistring",
+      "dir": "/Users/manas/development/prometheansacrifice/bale/esy-dependencies/libunistring",
+      "transitive": 0,
+      "direct": 0,
+      "ok": true,
+      "durationMs": 167262,
+      "mode": "default"
+    },
+    {
+      "name": "esy-libxml2",
+      "dir": "/Users/manas/development/prometheansacrifice/bale/esy-dependencies/libxml2",
+      "transitive": 0,
+      "direct": 0,
+      "ok": true,
+      "durationMs": 32331,
+      "mode": "default"
+    },
+    {
+      "name": "esy-lpeg",
+      "dir": "/Users/manas/development/prometheansacrifice/bale/esy-dependencies/lpeg",
+      "transitive": 0,
+      "direct": 0,
+      "ok": true,
+      "durationMs": 8285,
+      "mode": "default"
+    },
+    {
+      "name": "esy-luajit",
+      "dir": "/Users/manas/development/prometheansacrifice/bale/esy-dependencies/luajit",
+      "transitive": 0,
+      "direct": 0,
+      "ok": true,
+      "durationMs": 13356,
+      "mode": "default"
+    },
+    {
+      "name": "esy-luv",
+      "dir": "/Users/manas/development/prometheansacrifice/bale/esy-dependencies/luv",
+      "transitive": 0,
+      "direct": 0,
+      "ok": true,
+      "durationMs": 7059,
+      "mode": "default"
+    },
+    {
+      "name": "esy-neovim",
+      "dir": "/Users/manas/development/prometheansacrifice/bale/esy-dependencies/neovim",
+      "transitive": 0,
+      "direct": 0,
+      "ok": true,
+      "durationMs": 16690,
+      "mode": "default"
+    },
+    {
+      "name": "esy-unibilium",
+      "dir": "/Users/manas/development/prometheansacrifice/bale/esy-dependencies/unibilium",
+      "transitive": 0,
+      "direct": 0,
+      "ok": true,
+      "durationMs": 8356,
+      "mode": "default"
+    },
+    {
+      "name": "esy-utf8proc",
+      "dir": "/Users/manas/development/prometheansacrifice/bale/esy-dependencies/utf8proc",
+      "transitive": 0,
+      "direct": 0,
+      "ok": true,
+      "durationMs": 6117,
+      "mode": "default"
+    },
+    {
+      "name": "esy-automake",
+      "dir": "/Users/manas/development/prometheansacrifice/bale/esy-dependencies/automake",
+      "transitive": 1,
+      "direct": 1,
+      "ok": false,
+      "durationMs": 22145,
+      "mode": "default"
+    },
+    {
+      "name": "esy-libuv",
+      "dir": "/Users/manas/development/prometheansacrifice/bale/esy-dependencies/libuv",
+      "transitive": 1,
+      "direct": 1,
+      "ok": true,
+      "durationMs": 559500,
+      "mode": "default"
+    },
+    {
+      "name": "esy-acl",
+      "dir": "/Users/manas/development/prometheansacrifice/bale/esy-dependencies/acl",
+      "transitive": 2,
+      "direct": 2,
+      "ok": false,
+      "durationMs": 11739,
+      "mode": "default"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "name": "esy-utf8proc",
+  "version": "0.1.0",
+  "description": "esy-utf8proc packaged for esy",
+  "esy": {
+    "buildsInSource": true,
+    "build": [
+      [
+        "make"
+      ]
+    ],
+    "install": "make install prefix=#{self.install}",
+    "buildEnv": {
+      "PREFIX": "$cur__install",
+      "CC_PREFIX": "#{os == 'windows' ? 'x86_64-w64-mingw32-' : '' }"
+    },
+    "exportedEnv": {
+      "PKG_CONFIG_PATH": {
+        "val": "#{self.lib / 'pkgconfig'}",
+        "scope": "global"
+      }
+    }
+  },
+  "dependencies": {}
+}

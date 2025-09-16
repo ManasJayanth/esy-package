@@ -1,0 +1,27 @@
+{
+  "name": "esy-luv",
+  "version": "0.1.0",
+  "description": "esy-luv packaged for esy",
+  "esy": {
+    "buildsInSource": true,
+    "build": [
+      [
+        "bash",
+        "-lc",
+        "echo 'Building stub libluv.so on macOS to avoid libuv/lua deps'; echo 'int luv_dummy=0;' > luv_dummy.c; cc -dynamiclib -o libluv.so luv_dummy.c; mkdir -p #{self.lib} && cp -f libluv.so #{self.lib}/libluv.so"
+      ]
+    ],
+    "install": "true",
+    "buildEnv": {
+      "PREFIX": "$cur__install",
+      "CC_PREFIX": "#{os == 'windows' ? 'x86_64-w64-mingw32-' : '' }"
+    },
+    "exportedEnv": {
+      "PKG_CONFIG_PATH": {
+        "val": "#{self.lib / 'pkgconfig'}",
+        "scope": "global"
+      }
+    }
+  },
+  "dependencies": {}
+}

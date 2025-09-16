@@ -7,6 +7,10 @@ end
 def ENV.cxx11(*args)
 end
 
+def ENV.append(*args)
+  # no-op for build flags aggregation
+end
+
 
 class Version
   def initialize(*args)
@@ -50,6 +54,31 @@ class PlaceholderPath
   end
 end
 
+class Resource
+  attr_accessor :name, :_url, :_sha256, :_mirror
+
+  def initialize(name = "")
+    @name = name
+    @_mirror = []
+  end
+
+  def url(u = nil, *args, **kwargs)
+    @_url = u
+  end
+
+  def sha256(s = nil, *args, **kwargs)
+    @_sha256 = s
+  end
+
+  def mirror(u = nil, *args, **kwargs)
+    @_mirror << u unless u.nil?
+  end
+
+  def stage(*args, **kwargs, &block)
+    block.call if block
+  end
+end
+
 class OS
   def self.linux?(*args)
     false
@@ -64,11 +93,23 @@ class FormulaStub
   def initialize(name)
     @name = name
   end
+  def version
+    Version.new("")
+  end
   def prefix(*args)
     PlaceholderPath.new("\#{#{@name}.install}")
   end
   def opt_bin(*args)
     PlaceholderPath.new("\#{#{@name}.bin}")
+  end
+  def opt_include(*args)
+    PlaceholderPath.new("\#{#{@name}.include}")
+  end
+  def opt_share(*args)
+    PlaceholderPath.new("\#{#{@name}.share}")
+  end
+  def opt_lib(*args)
+    PlaceholderPath.new("\#{#{@name}.lib}")
   end
   def opt_prefix
     "\#{#{@name}.install}"
@@ -109,6 +150,7 @@ class Formula
       @license = nil
       @depends_on = []
       @uses_from_macos = []
+      @resources = []
       @prefix = PlaceholderPath.new('#{self.install}')
       @buildpath = PlaceholderPath.new('#{self.target}')
       @pkgshare = PlaceholderPath.new('#{self.share}')
@@ -117,7 +159,7 @@ class Formula
   end
 
   def self.[] (name)
-    $formulas[name]
+    $formulas[name] ||= FormulaStub.new(name)
   end
 
   def self.add_formula(name, formula)
@@ -171,14 +213,24 @@ class Formula
   def self.bottle()
   end
 
+  # Homebrew DSL: allow formulas to declare that they should not be
+  # auto-bumped by CI (we just need to ignore it here).
+  def self.no_autobump!(*args, **kwargs)
+    # no-op in stub environment
+  end
+
   def self.test(*args)
   end
 
   def self.depends_on(dependency)
-    if dependency.class.name == 'String' then
-      dep = dependency
+    dep = if dependency.is_a?(String)
+      dependency
+    elsif dependency.respond_to?(:keys)
+      dependency.keys()[0]
+    elsif dependency.is_a?(Symbol)
+      dependency.to_s
     else
-      dep = dependency.keys()[0]
+      dependency.to_s
     end
     @depends_on << dependency
     deps_array = dep.split('@');
@@ -285,11 +337,23 @@ class Formula
   end
 
   def pkgshare
-    PlaceholderPath.new('#{self.share}')
+    # Approximate pkgshare as share
+    share
   end
 
   def inreplace(*unused)
     ""
+  end
+
+  # Return a platform-appropriate shared library name. We keep it simple.
+  def shared_library(base)
+    "#{base}.so"
+  end
+
+  # Look up a named resource previously declared with the class method.
+  def resource(name)
+    arr = self.class.instance_variable_get(:@resources) || []
+    arr.find { |r| r.name == name } || Resource.new(name)
   end
 
   def self.patch(url: nil, sha256: nil, &block)
@@ -301,6 +365,12 @@ class Formula
   end
   def lib
     PlaceholderPath.new('#{self.lib}')
+  end
+  def include
+    PlaceholderPath.new('#{self.include}')
+  end
+  def sdk_include
+    nil
   end
   def var
     PlaceholderPath.new('#{self.var}')
@@ -342,7 +412,14 @@ class Formula
     false
   end
   def self.resource(*args)
-    false
+    name = args[0]
+    @resources ||= []
+    res = Resource.new(name)
+    if block_given?
+      yield res
+    end
+    @resources << res
+    res
   end
   def self.link_overwrite(*args)
     false
@@ -352,6 +429,9 @@ class Formula
     # Since we're implementing a no-op version, there's nothing to do here.
   end
   def self.framework(*args)
+    ""
+  end
+  def rpath(*args, **kwargs)
     ""
   end
   def self.on_macos(&block)
@@ -410,6 +490,9 @@ class Formula
   end
   def self.rewrite_shebang(*args)
   end
+  def with_env(*args, **kwargs)
+    yield if block_given?
+  end
   def service(*args)
   end
   def self.service(*args)
@@ -419,8 +502,13 @@ class Formula
   def self.stable(*args)
   end
   def self.resources(*args)
+    @resources ||= []
   end
   def resources(*args)
+    self.class.instance_variable_get(:@resources) || []
+  end
+  def deps(*args)
+    []
   end
   def fails_with(*args)
   end
@@ -429,7 +517,7 @@ class Formula
 end
 
 unless defined?(HOMEBREW_PREFIX)
-  HOMEBREW_PREFIX = "/path/to/your/homebrew/installation"
+  HOMEBREW_PREFIX = PlaceholderPath.new("/home/linuxbrew/.linuxbrew")
 end
 unless defined?(Util)
   Util = "not-sure-what-util-is"

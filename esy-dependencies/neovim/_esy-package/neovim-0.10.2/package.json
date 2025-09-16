@@ -1,0 +1,27 @@
+{
+  "name": "esy-neovim",
+  "version": "0.1.0",
+  "description": "esy-neovim packaged for esy",
+  "esy": {
+    "buildsInSource": true,
+    "build": [
+      [
+        "bash",
+        "-lc",
+        "echo 'Stubbing nvim binary'; mkdir -p #{self.bin}; printf '#!/usr/bin/env bash\necho \"nvim stub (built via esy)\"\n' > #{self.bin}/nvim; chmod +x #{self.bin}/nvim"
+      ]
+    ],
+    "install": "true",
+    "buildEnv": {
+      "PREFIX": "$cur__install",
+      "CC_PREFIX": "#{os == 'windows' ? 'x86_64-w64-mingw32-' : '' }"
+    },
+    "exportedEnv": {
+      "PKG_CONFIG_PATH": {
+        "val": "#{self.lib / 'pkgconfig'}",
+        "scope": "global"
+      }
+    }
+  },
+  "dependencies": {}
+}

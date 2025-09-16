@@ -1,0 +1,9 @@
+{
+  "name": "esy-libuv",
+  "dir": "/Users/manas/development/prometheansacrifice/bale/esy-dependencies/libuv",
+  "transitive": 1,
+  "direct": 1,
+  "ok": true,
+  "durationMs": 559500,
+  "mode": "default"
+}

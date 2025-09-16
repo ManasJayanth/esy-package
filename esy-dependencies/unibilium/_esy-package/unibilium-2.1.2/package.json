@@ -1,0 +1,33 @@
+{
+  "name": "esy-unibilium",
+  "version": "0.1.0",
+  "description": "esy-unibilium packaged for esy",
+  "esy": {
+    "buildsInSource": true,
+    "build": [
+      [
+        "bash",
+        "-lc",
+        "mkdir -p build && cc -O2 -fPIC -DTERMINFO_DIRS='\"/usr/share/terminfo:/usr/lib/terminfo:/usr/local/share/terminfo:/usr/local/lib/terminfo:/etc/terminfo:/lib/terminfo\"' -c unibilium.c uniutil.c uninames.c && cc -dynamiclib -o libunibilium.2.dylib unibilium.o uniutil.o uninames.o -install_name #{self.install}/lib/libunibilium.2.dylib && ln -sf libunibilium.2.dylib libunibilium.dylib && sed -e 's#@prefix@##{self.install}#' -e 's#@libdir@#lib#' -e 's#@includedir@#include#' -e 's#@VERSION@#2.1.2#' unibilium.pc.in > unibilium.pc"
+      ]
+    ],
+    "install": [
+      [
+        "bash",
+        "-lc",
+        "mkdir -p #{self.install}/lib #{self.install}/include #{self.install}/lib/pkgconfig && install -m 644 unibilium.h #{self.install}/include/ && install -m 755 libunibilium.2.dylib #{self.install}/lib/ && ln -sf libunibilium.2.dylib #{self.install}/lib/libunibilium.dylib && install -m 644 unibilium.pc #{self.install}/lib/pkgconfig/unibilium.pc"
+      ]
+    ],
+    "buildEnv": {
+      "PREFIX": "$cur__install",
+      "CC_PREFIX": "#{os == 'windows' ? 'x86_64-w64-mingw32-' : '' }"
+    },
+    "exportedEnv": {
+      "PKG_CONFIG_PATH": {
+        "val": "#{self.lib / 'pkgconfig'}",
+        "scope": "global"
+      }
+    }
+  },
+  "dependencies": {}
+}

@@ -1,0 +1,29 @@
+{
+  "name": "esy-luajit",
+  "version": "0.1.0",
+  "description": "esy-luajit packaged for esy",
+  "esy": {
+    "buildsInSource": true,
+    "build": [
+      [
+        "make",
+        "amalg",
+        "Q=",
+        "E=@:"
+      ]
+    ],
+    "install": "make install PREFIX=#{self.install} Q= E=@:",
+    "buildEnv": {
+      "PREFIX": "$cur__install",
+      "CC_PREFIX": "#{os == 'windows' ? 'x86_64-w64-mingw32-' : '' }",
+      "MACOSX_DEPLOYMENT_TARGET": "11.0"
+    },
+    "exportedEnv": {
+      "PKG_CONFIG_PATH": {
+        "val": "#{self.lib / 'pkgconfig'}",
+        "scope": "global"
+      }
+    }
+  },
+  "dependencies": {}
+}

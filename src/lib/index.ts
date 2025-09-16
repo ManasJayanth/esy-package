@@ -58,6 +58,7 @@ async function runE2E(
   packageRecipeTestsPath: path,
   userSpecifiedPrefixPath: path,
   registryUrl: url,
+  authToken?: string,
 ) {
   let testProjectPath = Path.join(Os.tmpdir(), "esy-test");
   if (fse.existsSync(packageRecipeTestsPath)) {
@@ -69,6 +70,22 @@ async function runE2E(
     fse.copySync(packageRecipeTestsPath, testProjectPath, {
       overwrite: true,
     });
+    // Ensure test project can authenticate to local verdaccio
+    if (authToken) {
+      try {
+        const u = new URL(String(registryUrl));
+        const npmrc = [
+          `registry=${u.origin}/`,
+          `//${u.host}/:_authToken="${authToken}"`,
+          `always-auth=true`,
+          `
+`,
+        ].join("\n");
+        fs.writeFileSync(Path.join(testProjectPath, ".npmrc"), npmrc, {
+          flag: "a",
+        });
+      } catch {}
+    }
     const prefixPath = userSpecifiedPrefixPath ?? setupTemporaryEsyPrefix();
     Log.info("Running esy install");
     Log.process(
@@ -111,7 +128,7 @@ async function publishToLocalVerdaccio(
   server: any,
   tarballPath: path,
   cwd: path,
-) {
+): Promise<string> {
   Log.info("Publishing to verdaccio server");
   const registryUrl = NpmServer.getUrl(server);
   const token = await createSession(server);
@@ -123,6 +140,7 @@ async function publishToLocalVerdaccio(
     "verdaccio",
     await NpmClient.publish(registryUrl, tarballPath, tokenFile),
   );
+  return token;
 }
 
 async function getLocalVerdaccioWithPackage(
@@ -131,15 +149,15 @@ async function getLocalVerdaccioWithPackage(
   storagePath: path,
   manifest: any,
   registryLogLevel: string,
-): Promise<NpmServer.$Server> {
+): Promise<{ server: NpmServer.$Server; token: string }> {
   const tarballPath = await fetchAndPkg(pack, cwd);
   const server = await setupLocalVerdaccio(
     storagePath,
     manifest,
     registryLogLevel,
   );
-  await publishToLocalVerdaccio(server, tarballPath, cwd);
-  return server;
+  const token = await publishToLocalVerdaccio(server, tarballPath, cwd);
+  return { server, token };
 }
 
 async function withPackagePublishedToLocalTestEnv(
@@ -148,16 +166,16 @@ async function withPackagePublishedToLocalTestEnv(
   storagePath: path,
   manifest: any,
   registryLogLevel: string,
-  f: (server: NpmServer.$Server) => Promise<void>,
+  f: (server: NpmServer.$Server, token: string) => Promise<void>,
 ): Promise<void> {
-  const server = await getLocalVerdaccioWithPackage(
+  const { server, token } = await getLocalVerdaccioWithPackage(
     pack,
     cwd,
     storagePath,
     manifest,
     registryLogLevel,
   );
-  await f(server);
+  await f(server, token);
   cleanup(server);
 }
 
@@ -167,6 +185,7 @@ export async function defaultCommand(
   storagePath: path = Defaults.storagePath,
   userSpecifiedPrefixPath: path = null,
   registryLogLevel: string,
+  ephemeralStorage: boolean = false,
 ) {
   let returnStatus: number;
   let server: any;
@@ -174,19 +193,27 @@ export async function defaultCommand(
   try {
     Log.info("Setting up separate testing area on temporary directory");
     const packageRecipeTestsPath = Path.join(cwd, "esy-test");
+    let effectiveStoragePath = storagePath;
+    let ephemeralDir: string = null;
+    if (ephemeralStorage) {
+      const tmpPrefix = Path.join(Os.tmpdir(), "verdaccio-");
+      ephemeralDir = fs.mkdtempSync(tmpPrefix);
+      effectiveStoragePath = ephemeralDir;
+    }
     if (fse.existsSync(packageRecipeTestsPath)) {
       await withPackagePublishedToLocalTestEnv(
         pack,
         cwd,
-        storagePath,
+        effectiveStoragePath,
         manifest,
         registryLogLevel,
-        async (server: NpmServer.$Server) => {
+        async (server: NpmServer.$Server, token: string) => {
           const registryUrl = NpmServer.getUrl(server);
           await runE2E(
             packageRecipeTestsPath,
             userSpecifiedPrefixPath,
             registryUrl,
+            token,
           );
         },
       );
@@ -194,10 +221,10 @@ export async function defaultCommand(
       await withPackagePublishedToLocalTestEnv(
         pack,
         cwd,
-        storagePath,
+        effectiveStoragePath,
         manifest,
         registryLogLevel,
-        async (server: NpmServer.$Server) => {
+        async (server: NpmServer.$Server, token: string) => {
           // If the package recipe author doesn't provide a test
           // create a simple test by placing a esy.json with the package
           // as dependency
@@ -222,6 +249,7 @@ export async function defaultCommand(
             packageRecipeTestsPath,
             userSpecifiedPrefixPath,
             registryUrl,
+            token,
           );
         },
       );
@@ -233,6 +261,11 @@ export async function defaultCommand(
     returnStatus = -1;
   } finally {
     cleanup(server);
+    try {
+      if (ephemeralStorage && ephemeralDir) {
+        rimraf.sync(ephemeralDir);
+      }
+    } catch {}
   }
   process.exit(returnStatus);
 }
@@ -241,6 +274,7 @@ async function e2eShell(
   packageRecipeTestsPath: path,
   userSpecifiedPrefixPath: path,
   registryUrl: url,
+  authToken?: string,
 ): Promise<void> {
   return new Promise((resolve) => {
     let testProjectPath = Path.join(Os.tmpdir(), "esy-test");
@@ -249,6 +283,20 @@ async function e2eShell(
     fse.copySync(packageRecipeTestsPath, testProjectPath, {
       overwrite: true,
     });
+    if (authToken) {
+      try {
+        const u = new URL(String(registryUrl));
+        const npmrc = [
+          `registry=${u.origin}/`,
+          `//${u.host}/:_authToken="${authToken}"`,
+          `always-auth=true`,
+          `\n`,
+        ].join("\n");
+        fs.writeFileSync(Path.join(testProjectPath, ".npmrc"), npmrc, {
+          flag: "a",
+        });
+      } catch {}
+    }
     const prefixPath = userSpecifiedPrefixPath ?? setupTemporaryEsyPrefix();
     Log.info("Dropping into a shell to debug");
     // We earlier used /bin/bash On Windows it's advisable to simply use
@@ -283,6 +331,7 @@ export async function shellCommand(
   storagePath: path = Defaults.storagePath,
   userSpecifiedPrefixPath: path = null,
   registryLogLevel: string,
+  ephemeralStorage: boolean = false,
 ) {
   let returnStatus: number;
   let server: any;
@@ -291,11 +340,18 @@ export async function shellCommand(
     const manifest = require(Path.join(cwd, "esy.json"));
     const packageRecipeTestsPath = Path.join(cwd, "esy-test");
     if (fse.existsSync(packageRecipeTestsPath)) {
+      let effectiveStoragePath = storagePath;
+      let ephemeralDir: string = null;
+      if (ephemeralStorage) {
+        const tmpPrefix = Path.join(Os.tmpdir(), "verdaccio-");
+        ephemeralDir = fs.mkdtempSync(tmpPrefix);
+        effectiveStoragePath = ephemeralDir;
+      }
       // TODO see note in defaultCommand
-      const server = await getLocalVerdaccioWithPackage(
+      const { server, token } = await getLocalVerdaccioWithPackage(
         pack,
         cwd,
-        storagePath,
+        effectiveStoragePath,
         manifest,
         registryLogLevel,
       );
@@ -304,7 +360,13 @@ export async function shellCommand(
         packageRecipeTestsPath,
         userSpecifiedPrefixPath,
         registryUrl,
+        token,
       );
+      try {
+        if (ephemeralStorage && ephemeralDir) {
+          rimraf.sync(ephemeralDir);
+        }
+      } catch {}
     }
     returnStatus = 0;
   } catch (e) {
@@ -342,12 +404,24 @@ export async function generate(cwd: path, pkg: string): Promise<void> {
         .trim();
     } catch {}
     if (!npmMetaData) {
-      const brewFormulaPath = cp
-        .execSync(`brew edit ${pkg} --print-path`, {
-          stdio: [null, "pipe", null],
-        })
-        .toString()
-        .trim();
+      let brewFormulaPath: string;
+      try {
+        brewFormulaPath = cp
+          .execSync(`brew edit ${pkg} --print-path`, {
+            stdio: [null, "pipe", null],
+          })
+          .toString()
+          .trim();
+      } catch (e) {
+        // Fallback: Homebrew may not have the local formula checkout.
+        // Use `brew cat` to fetch the formula source and write it to a temp file.
+        const formulaSrc = cp
+          .execSync(`brew cat ${pkg}`, { stdio: [null, "pipe", null] })
+          .toString();
+        const tmpPath = Path.join(cwd, `.bale-tmp-${pkg}.rb`);
+        fs.writeFileSync(tmpPath, formulaSrc);
+        brewFormulaPath = tmpPath;
+      }
       const etcPath = (file) =>
         Path.join(Path.resolve(__dirname, "..", "..", "etc"), file);
       const etc = {
