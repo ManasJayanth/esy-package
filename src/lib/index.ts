@@ -77,7 +77,7 @@ async function runE2E(
         const npmrc = [
           `registry=${u.origin}/`,
           `//${u.host}/:_authToken="${authToken}"`,
-          `always-auth=false`,
+          `always-auth=true`,
           `
 `,
         ].join("\n");
