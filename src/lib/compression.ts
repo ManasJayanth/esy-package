@@ -21,7 +21,20 @@ export async function tar(filePath, destDir, gzip?) {
   filePath = await cygpath(filePath);
   destDir = await cygpath(destDir);
   if (process.platform === "win32") {
-    await extractTarball(filePath, destDir);
+    // Prefer system tar when available on Windows; fall back to Node streams
+    try {
+      const hasTar = cp.spawnSync('tar', ['--version'], { stdio: 'ignore' }).status === 0;
+      if (hasTar) {
+        const cmd = `tar -x${gzip ? 'z' : ''}f "${filePath}" -C "${destDir}"`;
+        debug("Running", cmd);
+        cp.execSync(cmd, { stdio: 'inherit' });
+      } else {
+        await extractTarball(filePath, destDir);
+      }
+    } catch (e) {
+      // Fallback to stream-based extraction if system tar fails
+      await extractTarball(filePath, destDir);
+    }
   } else {
     const cmd = `tar -x${gzip ? "z" : ""}f ${filePath} -C ${destDir}`;
     debug("Running", cmd);
